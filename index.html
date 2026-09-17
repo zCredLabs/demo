@@ -26,7 +26,20 @@
         </div>
 
         <div class="nav-center">
-          <div class="persona-toggle">
+          <!-- Policy Switcher -->
+          <div class="policy-toggle">
+            <button id="btn-policy-riskx" class="policy-btn active" data-policy="1">
+              <span class="p-badge">0x01</span>
+              <span>RiskX Credit</span>
+            </button>
+            <button id="btn-policy-compliance" class="policy-btn" data-policy="2">
+              <span class="p-badge">0x02</span>
+              <span>Compliance Shield</span>
+            </button>
+          </div>
+
+          <!-- Policy 1 Personas: Alice & Bob -->
+          <div class="persona-toggle" id="personas-riskx">
             <button id="btn-alice" class="persona-btn active" data-persona="alice">
               <span class="p-avatar">👩‍💼</span>
               <span class="p-info">
@@ -39,6 +52,31 @@
               <span class="p-info">
                 <strong>Bob</strong>
                 <small>Subprime Underwriting</small>
+              </span>
+            </button>
+          </div>
+
+          <!-- Policy 2 Personas: Carol, Erin, Dave -->
+          <div class="persona-toggle" id="personas-compliance" style="display: none;">
+            <button id="btn-carol" class="persona-btn active" data-persona="carol">
+              <span class="p-avatar">💎</span>
+              <span class="p-info">
+                <strong>Carol</strong>
+                <small>Accredited ($2.5M)</small>
+              </span>
+            </button>
+            <button id="btn-erin" class="persona-btn" data-persona="erin">
+              <span class="p-avatar">🛡️</span>
+              <span class="p-info">
+                <strong>Erin</strong>
+                <small>Retail Cleared ($50k)</small>
+              </span>
+            </button>
+            <button id="btn-dave" class="persona-btn" data-persona="dave">
+              <span class="p-avatar">🚫</span>
+              <span class="p-info">
+                <strong>Dave</strong>
+                <small>OFAC Sanctioned</small>
               </span>
             </button>
           </div>
@@ -60,27 +98,27 @@
       <div class="pipeline-tracker">
         <div class="step-item active" id="step-1">
           <span class="step-num">1</span>
-          <span class="step-label">zkTLS Claim Ingestion</span>
+          <span class="step-label" id="step-1-label">zkTLS Claim Ingestion</span>
         </div>
         <div class="step-divider"></div>
         <div class="step-item" id="step-2">
           <span class="step-num">2</span>
-          <span class="step-label">P-521 ECDH & AAD Binding</span>
+          <span class="step-label" id="step-2-label">P-521 ECDH & AAD Binding</span>
         </div>
         <div class="step-divider"></div>
         <div class="step-item" id="step-3">
           <span class="step-num">3</span>
-          <span class="step-label">In-Guest WASM Decrypt</span>
+          <span class="step-label" id="step-3-label">In-Guest WASM Decrypt</span>
         </div>
         <div class="step-divider"></div>
         <div class="step-item" id="step-4">
           <span class="step-num">4</span>
-          <span class="step-label">EIP-712 Hardware Attestation</span>
+          <span class="step-label" id="step-4-label">EIP-712 Hardware Attestation</span>
         </div>
         <div class="step-divider"></div>
         <div class="step-item" id="step-5">
           <span class="step-num">5</span>
-          <span class="step-label">Noct 105% Settlement</span>
+          <span class="step-label" id="step-5-label">Noct 105% Settlement</span>
         </div>
       </div>
 
@@ -98,7 +136,7 @@
 
           <div class="panel-body">
             <div class="telemetry-block">
-              <div class="block-label">Redacted In-Memory Financial Claim (Client RAM Only)</div>
+              <div class="block-label" id="client-claim-label">Redacted In-Memory Financial Claim (Client RAM Only)</div>
               <div class="code-box" id="client-claim-box">
                 <!-- Injected by main.ts -->
               </div>
@@ -186,11 +224,11 @@
                 </div>
                 <div class="exec-step" id="exec-aad">
                   <span class="exec-dot"></span>
-                  <span class="exec-text">2. Cross-Chain AAD Authenticated (Chain 84532)</span>
+                  <span class="exec-text" id="exec-aad-text">2. Cross-Chain AAD Authenticated (Chain 84532)</span>
                 </div>
                 <div class="exec-step" id="exec-policy">
                   <span class="exec-dot"></span>
-                  <span class="exec-text">3. PolicyDispatcher::dispatch(0x01) -> RiskX Evaluated</span>
+                  <span class="exec-text" id="exec-policy-text">3. PolicyDispatcher::dispatch(0x01) -> RiskX Evaluated</span>
                 </div>
                 <div class="exec-step" id="exec-zeroize">
                   <span class="exec-dot"></span>
@@ -207,7 +245,7 @@
               <div class="block-label">Enclave Decision & Attestation Output (171 Bytes)</div>
               <div class="field-list">
                 <div class="field-row">
-                  <span class="field-k">Assigned Tier:</span>
+                  <span class="field-k" id="decision-label">Assigned Tier:</span>
                   <span class="field-v tag-tier" id="wasm-tier">--</span>
                 </div>
                 <div class="field-row">
@@ -215,7 +253,7 @@
                   <span class="field-v mono" id="wasm-nullifier">--</span>
                 </div>
                 <div class="field-row">
-                  <span class="field-k">LTV Custom Data:</span>
+                  <span class="field-k" id="customdata-label">LTV Custom Data:</span>
                   <span class="field-v mono" id="wasm-customdata">--</span>
                 </div>
                 <div class="field-row">
@@ -280,7 +318,8 @@
               </div>
             </div>
 
-            <div class="telemetry-block">
+            <!-- Partner Gate 1: Noct Lending Pool (Policy 1) -->
+            <div class="telemetry-block" id="partner-card-noct">
               <div class="block-label">Noct Finance Undercollateralized Borrow Gate</div>
               <div class="noct-gate-card">
                 <div class="collateral-stat">
@@ -311,19 +350,59 @@
               </div>
             </div>
 
+            <!-- Partner Gate 2: Layrs Dark Pool (Policy 2) -->
+            <div class="telemetry-block" id="partner-card-layrs" style="display: none;">
+              <div class="block-label">Layrs Confidential Dark Pool Gate (MockLayrsDarkPool.sol)</div>
+              <div class="layrs-gate-card">
+                <div class="gate-row" id="layrs-spot-row">
+                  <div class="gate-info">
+                    <span class="gate-name">Spot Order Gate (Non-RWA Book)</span>
+                    <span class="gate-desc">Requires Passed OFAC & Clean Jurisdiction (Status 1 or 2)</span>
+                  </div>
+                  <span class="gate-badge gate-granted" id="layrs-spot-badge">✅ GRANTED</span>
+                </div>
+                <div class="gate-receipt-sub" id="layrs-spot-receipt">
+                  <span>Order Hash:</span> <strong class="mono" id="layrs-spot-hash">--</strong>
+                  <span class="gas-tag" id="layrs-spot-gas">57,904 gas</span>
+                </div>
+
+                <div class="gate-divider"></div>
+
+                <div class="gate-row" id="layrs-rwa-row">
+                  <div class="gate-info">
+                    <span class="gate-name">Institutional RWA Order Gate (Tokenized Treasuries)</span>
+                    <span class="gate-desc">Requires Verified Accredited Investor (Status 1 & isAccredited bit)</span>
+                  </div>
+                  <span class="gate-badge gate-granted" id="layrs-rwa-badge">✅ GRANTED</span>
+                </div>
+                <div class="gate-receipt-sub" id="layrs-rwa-receipt">
+                  <span>Order Hash:</span> <strong class="mono" id="layrs-rwa-hash">--</strong>
+                  <span class="gas-tag" id="layrs-rwa-gas">57,939 gas</span>
+                </div>
+
+                <div class="gate-callout callout-granted" id="layrs-callout">
+                  <span class="callout-icon" id="layrs-callout-icon">✓</span>
+                  <div id="layrs-callout-text">
+                    <strong>Institutional Accreditation Verified</strong>
+                    <p>Carol ($2.5M Net Worth) is cleared for both Spot and Institutional Dark Pool trading!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="telemetry-block">
               <div class="block-label">Cross-Domain Unlinkability Audit</div>
               <div class="privacy-audit-box">
                 <div class="audit-row">
-                  <span>noctfinance.xyz nullifier:</span>
+                  <span id="audit-label-primary">noctfinance.xyz nullifier:</span>
                   <span class="mono" id="audit-noct-nullifier">--</span>
                 </div>
                 <div class="audit-row">
-                  <span>layrs.xyz nullifier:</span>
+                  <span id="audit-label-secondary">layrs.xyz nullifier:</span>
                   <span class="mono" id="audit-layrs-nullifier">--</span>
                 </div>
                 <div class="audit-row">
-                  <span>layrs.xyz on-chain status:</span>
+                  <span id="audit-label-status">Secondary domain on-chain status:</span>
                   <span class="audit-status" id="audit-status">isValid: false (Clean zero state)</span>
                 </div>
               </div>
