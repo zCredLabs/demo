@@ -45,6 +45,10 @@
         </div>
 
         <div class="nav-right">
+          <div class="network-toggle">
+            <button id="btn-net-local" class="net-btn active" data-network="local">Local Anvil</button>
+            <button id="btn-net-sepolia" class="net-btn" data-network="sepolia">Base Sepolia</button>
+          </div>
           <button id="btn-run" class="run-btn">
             <span class="btn-icon">⚡</span>
             <span>Execute In-Enclave Pipeline</span>
@@ -165,7 +169,7 @@
               </div>
               <div class="runtime-row">
                 <span class="r-label">Hardware Runtime:</span>
-                <span class="r-val">Horizen Vela Nitro / V8 Coprocessor</span>
+                <span class="r-val" id="wasm-runtime-label">Horizen Vela Wasmtime / Software TEE Staging</span>
               </div>
               <div class="runtime-row">
                 <span class="r-label">Linear Memory:</span>
@@ -243,15 +247,23 @@
 
           <div class="panel-body">
             <div class="telemetry-block">
-              <div class="block-label">ZcredRegistry.sol Attestation Receipt</div>
+              <div class="block-label">On-Chain Attestation & Settlement Receipt</div>
               <div class="receipt-box">
                 <div class="receipt-row">
-                  <span>Network:</span>
-                  <strong>Base Sepolia (Chain ID 84532)</strong>
+                  <span>Target Network:</span>
+                  <strong id="contract-network">Local Anvil Devnet (84532)</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Settler Mechanism:</span>
+                  <span class="mono" id="contract-settler">Direct Viem / MockTeeAuth</span>
+                </div>
+                <div class="receipt-row" id="row-trigger" style="display: none;">
+                  <span>Vela Trigger Adapter:</span>
+                  <span class="mono highlight-trigger" id="contract-trigger">0xD580...85BB</span>
                 </div>
                 <div class="receipt-row">
                   <span>Registry Address:</span>
-                  <span class="mono" id="contract-registry">0xe7f1725E...3f0512</span>
+                  <span class="mono" id="contract-registry">0x5FbDB2...80aa3</span>
                 </div>
                 <div class="receipt-row">
                   <span>Tx Hash:</span>

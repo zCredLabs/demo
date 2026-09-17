@@ -177,6 +177,47 @@ body {
 }
 
 /* Run Pipeline Button */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.network-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.net-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.net-btn.active {
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 242, 254, 0.4);
+}
+
+.highlight-trigger {
+  color: #ff0080;
+  background: rgba(255, 0, 128, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .run-btn {
   display: flex;
   align-items: center;

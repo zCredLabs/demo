@@ -65,11 +65,42 @@ const PERSONAS: Record<string, PersonaData> = {
 };
 
 let currentPersona = PERSONAS.alice;
+let currentNetwork: "local" | "sepolia" = "local";
 let isRunning = false;
+
+interface NetworkSettings {
+  name: string;
+  registry: `0x${string}`;
+  trigger: `0x${string}`;
+  settler: string;
+  hasTrigger: boolean;
+  gasLabel: string;
+}
+
+const NETWORKS: Record<"local" | "sepolia", NetworkSettings> = {
+  local: {
+    name: "Local Anvil Devnet (84532)",
+    registry: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    trigger: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    settler: "Direct Viem / MockTeeAuth",
+    hasTrigger: false,
+    gasLabel: "110,410 gas (Cold Store)",
+  },
+  sepolia: {
+    name: "Base Sepolia Testnet (84532)",
+    registry: "0x3fa8362b7Eb3660f1C89b355e4565Ab68e1E1466",
+    trigger: "0xD580819D6DFBAfb5e38732d1b3454984194185BB",
+    settler: "VelaZcredTrigger Adapter",
+    hasTrigger: true,
+    gasLabel: "121,795 gas (Trigger Settlement)",
+  },
+};
 
 // DOM Elements
 const btnAlice = document.getElementById("btn-alice") as HTMLButtonElement;
 const btnBob = document.getElementById("btn-bob") as HTMLButtonElement;
+const btnNetLocal = document.getElementById("btn-net-local") as HTMLButtonElement;
+const btnNetSepolia = document.getElementById("btn-net-sepolia") as HTMLButtonElement;
 const btnRun = document.getElementById("btn-run") as HTMLButtonElement;
 
 const claimBox = document.getElementById("client-claim-box")!;
@@ -87,7 +118,14 @@ const wasmExpiry = document.getElementById("wasm-expiry")!;
 const wasmDigest = document.getElementById("wasm-digest")!;
 const wasmSignature = document.getElementById("wasm-signature")!;
 
+const contractNetwork = document.getElementById("contract-network")!;
+const contractSettler = document.getElementById("contract-settler")!;
+const rowTrigger = document.getElementById("row-trigger")!;
+const contractTrigger = document.getElementById("contract-trigger")!;
+const contractRegistry = document.getElementById("contract-registry")!;
 const contractTxHash = document.getElementById("contract-txhash")!;
+const contractGas = document.getElementById("contract-gas")!;
+
 const standardLimit = document.getElementById("standard-limit")!;
 const zcredRateLabel = document.getElementById("zcred-rate-label")!;
 const zcredLimit = document.getElementById("zcred-limit")!;
@@ -130,7 +168,7 @@ async function runPipeline() {
   if (isRunning) return;
   isRunning = true;
   btnRun.disabled = true;
-  btnRun.innerHTML = `<span class="btn-icon">⏳</span><span>Executing in Nitro WASM...</span>`;
+  btnRun.innerHTML = `<span class="btn-icon">⏳</span><span>Evaluating in WASM Coprocessor...</span>`;
 
   // Reset steps
   document.querySelectorAll(".step-item").forEach((s) => s.classList.remove("active", "completed"));
@@ -154,8 +192,9 @@ async function runPipeline() {
   crypto.getRandomValues(nonceBytes);
   const nonceHex = `0x${bytesToHex(nonceBytes)}` as `0x${string}`;
 
+  const net = NETWORKS[currentNetwork];
   const chainId = 84532n;
-  const registryAddr = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+  const registryAddr = net.registry;
   const dappDomain = "noctfinance.xyz";
 
   const aadHex = computeAad(1, 1, chainId, registryAddr, nonceHex, dappDomain);
@@ -217,6 +256,17 @@ async function runPipeline() {
   const txBytes = new Uint8Array(32);
   crypto.getRandomValues(txBytes);
   contractTxHash.textContent = `0x${bytesToHex(txBytes).slice(0, 18)}...`;
+  contractNetwork.textContent = net.name;
+  contractSettler.textContent = net.settler;
+  contractRegistry.textContent = `${net.registry.slice(0, 10)}...${net.registry.slice(-6)}`;
+  contractGas.textContent = net.gasLabel;
+
+  if (net.hasTrigger) {
+    rowTrigger.style.display = "flex";
+    contractTrigger.textContent = `${net.trigger.slice(0, 10)}...${net.trigger.slice(-6)}`;
+  } else {
+    rowTrigger.style.display = "none";
+  }
 
   const depositEth = 10.0;
   const stdLimit = depositEth / 1.4;
@@ -294,6 +344,22 @@ btnBob.addEventListener("click", () => {
   btnAlice.classList.remove("active");
   currentPersona = PERSONAS.bob;
   renderClaim(currentPersona);
+  runPipeline();
+});
+
+btnNetLocal.addEventListener("click", () => {
+  if (isRunning) return;
+  btnNetLocal.classList.add("active");
+  btnNetSepolia.classList.remove("active");
+  currentNetwork = "local";
+  runPipeline();
+});
+
+btnNetSepolia.addEventListener("click", () => {
+  if (isRunning) return;
+  btnNetSepolia.classList.add("active");
+  btnNetLocal.classList.remove("active");
+  currentNetwork = "sepolia";
   runPipeline();
 });
 
