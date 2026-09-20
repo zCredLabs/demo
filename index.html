@@ -1,417 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zcred Protocol — Hardware Enclave Confidential Decision Layer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./src/style.css" />
-  </head>
-  <body>
-    <div id="app">
-      <!-- Top Navigation -->
-      <header class="navbar">
-        <div class="nav-left">
-          <div class="logo-badge">
-            <span class="logo-dot"></span>
-            <span class="logo-title">ZCRED</span>
-            <span class="logo-sub">CONFIDENTIAL DECISION LAYER</span>
-          </div>
-          <div class="status-chip">
-            <span class="chip-dot"></span>
-            <span>Kernel: zcred_kernel.wasm (231 KB)</span>
-          </div>
-        </div>
 
-        <div class="nav-center">
-          <!-- Policy Switcher -->
-          <div class="policy-toggle">
-            <button id="btn-policy-riskx" class="policy-btn active" data-policy="1">
-              <span class="p-badge">0x01</span>
-              <span>RiskX Credit</span>
-            </button>
-            <button id="btn-policy-compliance" class="policy-btn" data-policy="2">
-              <span class="p-badge">0x02</span>
-              <span>Compliance Shield</span>
-            </button>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zcred Protocol — Hardware Enclave Confidential Decision Layer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
 
-          <!-- Policy 1 Personas: Alice & Bob -->
-          <div class="persona-toggle" id="personas-riskx">
-            <button id="btn-alice" class="persona-btn active" data-persona="alice">
-              <span class="p-avatar">👩‍💼</span>
-              <span class="p-info">
-                <strong>Alice</strong>
-                <small>Prime Underwriting</small>
-              </span>
-            </button>
-            <button id="btn-bob" class="persona-btn" data-persona="bob">
-              <span class="p-avatar">👨‍💻</span>
-              <span class="p-info">
-                <strong>Bob</strong>
-                <small>Subprime Underwriting</small>
-              </span>
-            </button>
-          </div>
-
-          <!-- Policy 2 Personas: Carol, Erin, Dave -->
-          <div class="persona-toggle" id="personas-compliance" style="display: none;">
-            <button id="btn-carol" class="persona-btn active" data-persona="carol">
-              <span class="p-avatar">💎</span>
-              <span class="p-info">
-                <strong>Carol</strong>
-                <small>Accredited ($2.5M)</small>
-              </span>
-            </button>
-            <button id="btn-erin" class="persona-btn" data-persona="erin">
-              <span class="p-avatar">🛡️</span>
-              <span class="p-info">
-                <strong>Erin</strong>
-                <small>Retail Cleared ($50k)</small>
-              </span>
-            </button>
-            <button id="btn-dave" class="persona-btn" data-persona="dave">
-              <span class="p-avatar">🚫</span>
-              <span class="p-info">
-                <strong>Dave</strong>
-                <small>OFAC Sanctioned</small>
-              </span>
-            </button>
-          </div>
+<body>
+  <div id="app">
+    <!-- Top Navigation -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="logo-badge">
+          <span class="logo-dot"></span>
+          <span class="logo-title">ZCRED</span>
+          <span class="logo-sub">CONFIDENTIAL DECISION LAYER</span>
         </div>
-
-        <div class="nav-right">
-          <div class="network-toggle">
-            <button id="btn-net-local" class="net-btn active" data-network="local">Local Anvil</button>
-            <button id="btn-net-sepolia" class="net-btn" data-network="sepolia">Base Sepolia</button>
-          </div>
-          <button id="btn-run" class="run-btn">
-            <span class="btn-icon">⚡</span>
-            <span>Execute In-Enclave Pipeline</span>
-          </button>
-        </div>
-      </header>
-
-      <!-- Pipeline Progress Tracker -->
-      <div class="pipeline-tracker">
-        <div class="step-item active" id="step-1">
-          <span class="step-num">1</span>
-          <span class="step-label" id="step-1-label">zkTLS Claim Ingestion</span>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item" id="step-2">
-          <span class="step-num">2</span>
-          <span class="step-label" id="step-2-label">P-521 ECDH & AAD Binding</span>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item" id="step-3">
-          <span class="step-num">3</span>
-          <span class="step-label" id="step-3-label">In-Guest WASM Decrypt</span>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item" id="step-4">
-          <span class="step-num">4</span>
-          <span class="step-label" id="step-4-label">EIP-712 Hardware Attestation</span>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item" id="step-5">
-          <span class="step-num">5</span>
-          <span class="step-label" id="step-5-label">Noct 105% Settlement</span>
+        <div class="status-chip">
+          <span class="chip-dot"></span>
+          <span>Kernel: zcred_kernel.wasm (231 KB)</span>
         </div>
       </div>
 
-      <!-- Main Showcase Grid: 3-Column Architecture -->
-      <main class="showcase-grid">
-        <!-- Column 1: Client Wire Protocol -->
-        <section class="panel-card" id="col-client">
-          <div class="panel-header">
-            <div class="panel-title">
-              <span class="icon">🔒</span>
-              <h3>1. Client zkTLS & Encrypted Wire</h3>
-            </div>
-            <span class="badge badge-purple">Zero Plaintext On Wire</span>
-          </div>
+      <div class="nav-center">
+        <!-- Policy Switcher -->
+        <div class="policy-toggle">
+          <button id="btn-policy-riskx" class="policy-btn active" data-policy="1">
+            <span class="p-badge">0x01</span>
+            <span>RiskX Credit</span>
+          </button>
+          <button id="btn-policy-compliance" class="policy-btn" data-policy="2">
+            <span class="p-badge">0x02</span>
+            <span>Compliance Shield</span>
+          </button>
+        </div>
 
-          <div class="panel-body">
-            <div class="telemetry-block">
-              <div class="block-label" id="client-claim-label">Redacted In-Memory Financial Claim (Client RAM Only)</div>
-              <div class="code-box" id="client-claim-box">
-                <!-- Injected by main.ts -->
-              </div>
-            </div>
+        <!-- Policy 1 Personas: Alice & Bob -->
+        <div class="persona-toggle" id="personas-riskx">
+          <button id="btn-alice" class="persona-btn active" data-persona="alice">
+            <span class="p-avatar">👩‍💼</span>
+            <span class="p-info">
+              <strong>Alice</strong>
+              <small>Prime Underwriting</small>
+            </span>
+          </button>
+          <button id="btn-bob" class="persona-btn" data-persona="bob">
+            <span class="p-avatar">👨‍💻</span>
+            <span class="p-info">
+              <strong>Bob</strong>
+              <small>Subprime Underwriting</small>
+            </span>
+          </button>
+        </div>
 
-            <div class="telemetry-block">
-              <div class="block-label">Canonical EncryptedEnvelopeV1 Wire Protocol</div>
-              <div class="field-list">
-                <div class="field-row">
-                  <span class="field-k">Version:</span>
-                  <span class="field-v" id="env-version">0x01 (Locked)</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Target Policy:</span>
-                  <span class="field-v" id="env-policy">0x01 (RiskX)</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Consuming Protocol:</span>
-                  <span class="field-v" id="env-domain">noctfinance.xyz</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Enclave Pubkey:</span>
-                  <span class="field-v mono" id="env-enclave-pubkey">0x0401... (133 bytes)</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Ephemeral Pubkey:</span>
-                  <span class="field-v mono" id="env-client-pubkey">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">96-bit AES-GCM IV:</span>
-                  <span class="field-v mono" id="env-iv">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">32-byte Replay Nonce:</span>
-                  <span class="field-v mono" id="env-nonce">--</span>
-                </div>
-                <div class="field-row highlight-aad">
-                  <span class="field-k">Cryptographic AAD:</span>
-                  <span class="field-v mono" id="env-aad">--</span>
-                </div>
-              </div>
-            </div>
+        <!-- Policy 2 Personas: Carol, Erin, Dave -->
+        <div class="persona-toggle" id="personas-compliance" style="display: none;">
+          <button id="btn-carol" class="persona-btn active" data-persona="carol">
+            <span class="p-avatar">💎</span>
+            <span class="p-info">
+              <strong>Carol</strong>
+              <small>Accredited ($2.5M)</small>
+            </span>
+          </button>
+          <button id="btn-erin" class="persona-btn" data-persona="erin">
+            <span class="p-avatar">🛡️</span>
+            <span class="p-info">
+              <strong>Erin</strong>
+              <small>Retail Cleared ($50k)</small>
+            </span>
+          </button>
+          <button id="btn-dave" class="persona-btn" data-persona="dave">
+            <span class="p-avatar">🚫</span>
+            <span class="p-info">
+              <strong>Dave</strong>
+              <small>OFAC Sanctioned</small>
+            </span>
+          </button>
+        </div>
+      </div>
 
-            <div class="telemetry-block">
-              <div class="block-label">Pure Wire Ciphertext (AES-256-GCM Payload)</div>
-              <div class="code-box mono-sm" id="env-ciphertext-box">
-                Waiting to build envelope...
-              </div>
-            </div>
-          </div>
-        </section>
+      <div class="nav-right">
+        <div class="network-toggle">
+          <button id="btn-net-local" class="net-btn active" data-network="local">Local Anvil</button>
+          <button id="btn-net-sepolia" class="net-btn" data-network="sepolia">Base Sepolia</button>
+        </div>
+        <button id="btn-run" class="run-btn">
+          <span class="btn-icon">⚡</span>
+          <span>Execute In-Enclave Pipeline</span>
+        </button>
+      </div>
+    </header>
 
-        <!-- Column 2: WebAssembly Nitro Enclave Guest -->
-        <section class="panel-card featured-panel" id="col-enclave">
-          <div class="panel-header">
-            <div class="panel-title">
-              <span class="icon">⚙️</span>
-              <h3>2. WebAssembly Nitro Enclave Guest</h3>
-            </div>
-            <span class="badge badge-green">In-Guest Decryption & Zeroization</span>
-          </div>
-
-          <div class="panel-body">
-            <div class="enclave-runtime-box">
-              <div class="runtime-row">
-                <span class="r-label">Guest Binary:</span>
-                <span class="r-val mono">zcred_kernel.wasm (wasm32-unknown-unknown)</span>
-              </div>
-              <div class="runtime-row">
-                <span class="r-label">Hardware Runtime:</span>
-                <span class="r-val" id="wasm-runtime-label">Horizen Vela Wasmtime / Software TEE Staging</span>
-              </div>
-              <div class="runtime-row">
-                <span class="r-label">Linear Memory:</span>
-                <span class="r-val mono" id="wasm-memory-status">Allocated & Zeroized</span>
-              </div>
-            </div>
-
-            <div class="telemetry-block">
-              <div class="block-label">Execution Stages inside Enclave</div>
-              <div class="execution-pipeline">
-                <div class="exec-step" id="exec-ecdh">
-                  <span class="exec-dot"></span>
-                  <span class="exec-text">1. NIST P-521 ECDH Shared Secret Derived</span>
-                </div>
-                <div class="exec-step" id="exec-aad">
-                  <span class="exec-dot"></span>
-                  <span class="exec-text" id="exec-aad-text">2. Cross-Chain AAD Authenticated (Chain 84532)</span>
-                </div>
-                <div class="exec-step" id="exec-policy">
-                  <span class="exec-dot"></span>
-                  <span class="exec-text" id="exec-policy-text">3. PolicyDispatcher::dispatch(0x01) -> RiskX Evaluated</span>
-                </div>
-                <div class="exec-step" id="exec-zeroize">
-                  <span class="exec-dot"></span>
-                  <span class="exec-text">4. Decrypted Plaintext Zeroized from Linear Memory</span>
-                </div>
-                <div class="exec-step" id="exec-sign">
-                  <span class="exec-dot"></span>
-                  <span class="exec-text">5. Hardware secp256k1 EIP-712 Digest Signed</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="telemetry-block">
-              <div class="block-label">Enclave Decision & Attestation Output (171 Bytes)</div>
-              <div class="field-list">
-                <div class="field-row">
-                  <span class="field-k" id="decision-label">Assigned Tier:</span>
-                  <span class="field-v tag-tier" id="wasm-tier">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Domain Nullifier:</span>
-                  <span class="field-v mono" id="wasm-nullifier">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k" id="customdata-label">LTV Custom Data:</span>
-                  <span class="field-v mono" id="wasm-customdata">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Expiry Timestamp:</span>
-                  <span class="field-v mono" id="wasm-expiry">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">EIP-712 Digest:</span>
-                  <span class="field-v mono" id="wasm-digest">--</span>
-                </div>
-                <div class="field-row">
-                  <span class="field-k">Enclave Signature:</span>
-                  <span class="field-v mono" id="wasm-signature">--</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Column 3: EVM Settlement & Partner Gate -->
-        <section class="panel-card" id="col-settlement">
-          <div class="panel-header">
-            <div class="panel-title">
-              <span class="icon">🏛️</span>
-              <h3>3. Settlement & Partner Gate</h3>
-            </div>
-            <span class="badge badge-blue">Base Sepolia &lt; 26k Gas</span>
-          </div>
-
-          <div class="panel-body">
-            <div class="telemetry-block">
-              <div class="block-label">On-Chain Attestation & Settlement Receipt</div>
-              <div class="receipt-box">
-                <div class="receipt-row">
-                  <span>Target Network:</span>
-                  <strong id="contract-network">Local Anvil Devnet (84532)</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Settler Mechanism:</span>
-                  <span class="mono" id="contract-settler">Direct Viem / MockTeeAuth</span>
-                </div>
-                <div class="receipt-row" id="row-trigger" style="display: none;">
-                  <span>Vela Trigger Adapter:</span>
-                  <span class="mono highlight-trigger" id="contract-trigger">0xD580...85BB</span>
-                </div>
-                <div class="receipt-row">
-                  <span>Registry Address:</span>
-                  <span class="mono" id="contract-registry">0x5FbDB2...80aa3</span>
-                </div>
-                <div class="receipt-row">
-                  <span>Tx Hash:</span>
-                  <span class="mono" id="contract-txhash">0x84c60daf...</span>
-                </div>
-                <div class="receipt-row">
-                  <span>Gas Consumed:</span>
-                  <span class="gas-tag" id="contract-gas">110,410 gas (Cold Store)</span>
-                </div>
-                <div class="receipt-row">
-                  <span>Single-Slot Read:</span>
-                  <span class="gas-tag highlight-gas">2,520 gas (&lt; 26k Target)</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Partner Gate 1: Noct Lending Pool (Policy 1) -->
-            <div class="telemetry-block" id="partner-card-noct">
-              <div class="block-label">Noct Finance Undercollateralized Borrow Gate</div>
-              <div class="noct-gate-card">
-                <div class="collateral-stat">
-                  <span class="c-label">Collateral Deposited</span>
-                  <span class="c-val" id="noct-collateral">10.00 ETH</span>
-                </div>
-
-                <div class="comparison-grid">
-                  <div class="comp-box standard-box">
-                    <span class="comp-title">Standard DeFi (140% LTV)</span>
-                    <span class="comp-limit" id="standard-limit">7.143 ETH</span>
-                    <small>Standard Overcollateralized</small>
-                  </div>
-                  <div class="comp-box zcred-box">
-                    <span class="comp-title" id="zcred-rate-label">Zcred Tier 1 (105% LTV)</span>
-                    <span class="comp-limit" id="zcred-limit">9.524 ETH</span>
-                    <small class="gain-text" id="zcred-gain">+33.3% Capital Efficiency</small>
-                  </div>
-                </div>
-
-                <div class="borrow-success-box" id="borrow-summary">
-                  <span class="check-icon">✓</span>
-                  <div>
-                    <strong>9.0 ETH Loan Drawn Live On-Chain</strong>
-                    <p>Impossible under standard DeFi 140% margin without liquidating!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Partner Gate 2: Layrs Dark Pool (Policy 2) -->
-            <div class="telemetry-block" id="partner-card-layrs" style="display: none;">
-              <div class="block-label">Layrs Confidential Dark Pool Gate (MockLayrsDarkPool.sol)</div>
-              <div class="layrs-gate-card">
-                <div class="gate-row" id="layrs-spot-row">
-                  <div class="gate-info">
-                    <span class="gate-name">Spot Order Gate (Non-RWA Book)</span>
-                    <span class="gate-desc">Requires Passed OFAC & Clean Jurisdiction (Status 1 or 2)</span>
-                  </div>
-                  <span class="gate-badge gate-granted" id="layrs-spot-badge">✅ GRANTED</span>
-                </div>
-                <div class="gate-receipt-sub" id="layrs-spot-receipt">
-                  <span>Order Hash:</span> <strong class="mono" id="layrs-spot-hash">--</strong>
-                  <span class="gas-tag" id="layrs-spot-gas">57,904 gas</span>
-                </div>
-
-                <div class="gate-divider"></div>
-
-                <div class="gate-row" id="layrs-rwa-row">
-                  <div class="gate-info">
-                    <span class="gate-name">Institutional RWA Order Gate (Tokenized Treasuries)</span>
-                    <span class="gate-desc">Requires Verified Accredited Investor (Status 1 & isAccredited bit)</span>
-                  </div>
-                  <span class="gate-badge gate-granted" id="layrs-rwa-badge">✅ GRANTED</span>
-                </div>
-                <div class="gate-receipt-sub" id="layrs-rwa-receipt">
-                  <span>Order Hash:</span> <strong class="mono" id="layrs-rwa-hash">--</strong>
-                  <span class="gas-tag" id="layrs-rwa-gas">57,939 gas</span>
-                </div>
-
-                <div class="gate-callout callout-granted" id="layrs-callout">
-                  <span class="callout-icon" id="layrs-callout-icon">✓</span>
-                  <div id="layrs-callout-text">
-                    <strong>Institutional Accreditation Verified</strong>
-                    <p>Carol ($2.5M Net Worth) is cleared for both Spot and Institutional Dark Pool trading!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="telemetry-block">
-              <div class="block-label">Cross-Domain Unlinkability Audit</div>
-              <div class="privacy-audit-box">
-                <div class="audit-row">
-                  <span id="audit-label-primary">noctfinance.xyz nullifier:</span>
-                  <span class="mono" id="audit-noct-nullifier">--</span>
-                </div>
-                <div class="audit-row">
-                  <span id="audit-label-secondary">layrs.xyz nullifier:</span>
-                  <span class="mono" id="audit-layrs-nullifier">--</span>
-                </div>
-                <div class="audit-row">
-                  <span id="audit-label-status">Secondary domain on-chain status:</span>
-                  <span class="audit-status" id="audit-status">isValid: false (Clean zero state)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
+    <!-- Pipeline Progress Tracker -->
+    <div class="pipeline-tracker">
+      <div class="step-item active" id="step-1">
+        <span class="step-num">1</span>
+        <span class="step-label" id="step-1-label">zkTLS Claim Ingestion</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-2">
+        <span class="step-num">2</span>
+        <span class="step-label" id="step-2-label">P-521 ECDH & AAD Binding</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-3">
+        <span class="step-num">3</span>
+        <span class="step-label" id="step-3-label">In-Guest WASM Decrypt</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-4">
+        <span class="step-num">4</span>
+        <span class="step-label" id="step-4-label">EIP-712 Hardware Attestation</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-5">
+        <span class="step-num">5</span>
+        <span class="step-label" id="step-5-label">Noct 105% Settlement</span>
+      </div>
     </div>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+    <!-- Main Showcase Grid: 3-Column Architecture -->
+    <main class="showcase-grid">
+      <!-- Column 1: Client Wire Protocol -->
+      <section class="panel-card" id="col-client">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">🔒</span>
+            <h3>1. Client zkTLS & Encrypted Wire</h3>
+          </div>
+          <span class="badge badge-purple">Zero Plaintext On Wire</span>
+        </div>
+
+        <div class="panel-body">
+          <div class="telemetry-block">
+            <div class="block-label" id="client-claim-label">Redacted In-Memory Financial Claim (Client RAM Only)</div>
+            <div class="code-box" id="client-claim-box">
+              <!-- Injected by main.ts -->
+            </div>
+          </div>
+
+          <div class="telemetry-block">
+            <div class="block-label">Canonical EncryptedEnvelopeV1 Wire Protocol</div>
+            <div class="field-list">
+              <div class="field-row">
+                <span class="field-k">Version:</span>
+                <span class="field-v" id="env-version">0x01 (Locked)</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Target Policy:</span>
+                <span class="field-v" id="env-policy">0x01 (RiskX)</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Consuming Protocol:</span>
+                <span class="field-v" id="env-domain">noctfinance.xyz</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Enclave Pubkey:</span>
+                <span class="field-v mono" id="env-enclave-pubkey">0x0401... (133 bytes)</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Ephemeral Pubkey:</span>
+                <span class="field-v mono" id="env-client-pubkey">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">96-bit AES-GCM IV:</span>
+                <span class="field-v mono" id="env-iv">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">32-byte Replay Nonce:</span>
+                <span class="field-v mono" id="env-nonce">--</span>
+              </div>
+              <div class="field-row highlight-aad">
+                <span class="field-k">Cryptographic AAD:</span>
+                <span class="field-v mono" id="env-aad">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="telemetry-block">
+            <div class="block-label">Pure Wire Ciphertext (AES-256-GCM Payload)</div>
+            <div class="code-box mono-sm" id="env-ciphertext-box">
+              Waiting to build envelope...
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 2: WebAssembly Nitro Enclave Guest -->
+      <section class="panel-card featured-panel" id="col-enclave">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">⚙️</span>
+            <h3>2. WebAssembly Nitro Enclave Guest</h3>
+          </div>
+          <span class="badge badge-green">In-Guest Decryption & Zeroization</span>
+        </div>
+
+        <div class="panel-body">
+          <div class="enclave-runtime-box">
+            <div class="runtime-row">
+              <span class="r-label">Guest Binary:</span>
+              <span class="r-val mono">zcred_kernel.wasm (wasm32-unknown-unknown)</span>
+            </div>
+            <div class="runtime-row">
+              <span class="r-label">Hardware Runtime:</span>
+              <span class="r-val" id="wasm-runtime-label">Horizen Vela Wasmtime / Software TEE Staging</span>
+            </div>
+            <div class="runtime-row">
+              <span class="r-label">Linear Memory:</span>
+              <span class="r-val mono" id="wasm-memory-status">Allocated & Zeroized</span>
+            </div>
+          </div>
+
+          <div class="telemetry-block">
+            <div class="block-label">Execution Stages inside Enclave</div>
+            <div class="execution-pipeline">
+              <div class="exec-step" id="exec-ecdh">
+                <span class="exec-dot"></span>
+                <span class="exec-text">1. NIST P-521 ECDH Shared Secret Derived</span>
+              </div>
+              <div class="exec-step" id="exec-aad">
+                <span class="exec-dot"></span>
+                <span class="exec-text" id="exec-aad-text">2. Cross-Chain AAD Authenticated (Chain 84532)</span>
+              </div>
+              <div class="exec-step" id="exec-policy">
+                <span class="exec-dot"></span>
+                <span class="exec-text" id="exec-policy-text">3. PolicyDispatcher::dispatch(0x01) -> RiskX
+                  Evaluated</span>
+              </div>
+              <div class="exec-step" id="exec-zeroize">
+                <span class="exec-dot"></span>
+                <span class="exec-text">4. Decrypted Plaintext Zeroized from Linear Memory</span>
+              </div>
+              <div class="exec-step" id="exec-sign">
+                <span class="exec-dot"></span>
+                <span class="exec-text">5. Hardware secp256k1 EIP-712 Digest Signed</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="telemetry-block">
+            <div class="block-label">Enclave Decision & Attestation Output (171 Bytes)</div>
+            <div class="field-list">
+              <div class="field-row">
+                <span class="field-k" id="decision-label">Assigned Tier:</span>
+                <span class="field-v tag-tier" id="wasm-tier">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Domain Nullifier:</span>
+                <span class="field-v mono" id="wasm-nullifier">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k" id="customdata-label">LTV Custom Data:</span>
+                <span class="field-v mono" id="wasm-customdata">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Expiry Timestamp:</span>
+                <span class="field-v mono" id="wasm-expiry">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">EIP-712 Digest:</span>
+                <span class="field-v mono" id="wasm-digest">--</span>
+              </div>
+              <div class="field-row">
+                <span class="field-k">Enclave Signature:</span>
+                <span class="field-v mono" id="wasm-signature">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 3: EVM Settlement & Partner Gate -->
+      <section class="panel-card" id="col-settlement">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">🏛️</span>
+            <h3>3. Settlement & Partner Gate</h3>
+          </div>
+          <span class="badge badge-blue">Base Sepolia &lt; 26k Gas</span>
+        </div>
+
+        <div class="panel-body">
+          <div class="telemetry-block">
+            <div class="block-label">On-Chain Attestation & Settlement Receipt</div>
+            <div class="receipt-box">
+              <div class="receipt-row">
+                <span>Target Network:</span>
+                <strong id="contract-network">Local Anvil Devnet (84532)</strong>
+              </div>
+              <div class="receipt-row">
+                <span>Settler Mechanism:</span>
+                <span class="mono" id="contract-settler">Direct Viem / MockTeeAuth</span>
+              </div>
+              <div class="receipt-row" id="row-trigger" style="display: none;">
+                <span>Vela Trigger Adapter:</span>
+                <span class="mono highlight-trigger" id="contract-trigger">0xD580...85BB</span>
+              </div>
+              <div class="receipt-row">
+                <span>Registry Address:</span>
+                <span class="mono" id="contract-registry">0x5FbDB2...80aa3</span>
+              </div>
+              <div class="receipt-row">
+                <span>Tx Hash:</span>
+                <span class="mono" id="contract-txhash">0x84c60daf...</span>
+              </div>
+              <div class="receipt-row">
+                <span>Gas Consumed:</span>
+                <span class="gas-tag" id="contract-gas">110,410 gas (Cold Store)</span>
+              </div>
+              <div class="receipt-row">
+                <span>Single-Slot Read:</span>
+                <span class="gas-tag highlight-gas">2,520 gas (&lt; 26k Target)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partner Gate 1: Noct Lending Pool (Policy 1) -->
+          <div class="telemetry-block" id="partner-card-noct">
+            <div class="block-label">Noct Finance Undercollateralized Borrow Gate</div>
+            <div class="noct-gate-card">
+              <div class="collateral-stat">
+                <span class="c-label">Collateral Deposited</span>
+                <span class="c-val" id="noct-collateral">10.00 ETH</span>
+              </div>
+
+              <div class="comparison-grid">
+                <div class="comp-box standard-box">
+                  <span class="comp-title">Standard DeFi (140% LTV)</span>
+                  <span class="comp-limit" id="standard-limit">7.143 ETH</span>
+                  <small>Standard Overcollateralized</small>
+                </div>
+                <div class="comp-box zcred-box">
+                  <span class="comp-title" id="zcred-rate-label">Zcred Tier 1 (105% LTV)</span>
+                  <span class="comp-limit" id="zcred-limit">9.524 ETH</span>
+                  <small class="gain-text" id="zcred-gain">+33.3% Capital Efficiency</small>
+                </div>
+              </div>
+
+              <div class="borrow-success-box" id="borrow-summary">
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>9.0 ETH Loan Drawn Live On-Chain</strong>
+                  <p>Impossible under standard DeFi 140% margin without liquidating!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partner Gate 2: Layrs Dark Pool (Policy 2) -->
+          <div class="telemetry-block" id="partner-card-layrs" style="display: none;">
+            <div class="block-label">Layrs Confidential Dark Pool Gate (MockLayrsDarkPool.sol)</div>
+            <div class="layrs-gate-card">
+              <div class="gate-row" id="layrs-spot-row">
+                <div class="gate-info">
+                  <span class="gate-name">Spot Order Gate (Non-RWA Book)</span>
+                  <span class="gate-desc">Requires Passed OFAC & Clean Jurisdiction (Status 1 or 2)</span>
+                </div>
+                <span class="gate-badge gate-granted" id="layrs-spot-badge">✅ GRANTED</span>
+              </div>
+              <div class="gate-receipt-sub" id="layrs-spot-receipt">
+                <span>Order Hash:</span> <strong class="mono" id="layrs-spot-hash">--</strong>
+                <span class="gas-tag" id="layrs-spot-gas">57,904 gas</span>
+              </div>
+
+              <div class="gate-divider"></div>
+
+              <div class="gate-row" id="layrs-rwa-row">
+                <div class="gate-info">
+                  <span class="gate-name">Institutional RWA Order Gate (Tokenized Treasuries)</span>
+                  <span class="gate-desc">Requires Verified Accredited Investor (Status 1 & isAccredited bit)</span>
+                </div>
+                <span class="gate-badge gate-granted" id="layrs-rwa-badge">✅ GRANTED</span>
+              </div>
+              <div class="gate-receipt-sub" id="layrs-rwa-receipt">
+                <span>Order Hash:</span> <strong class="mono" id="layrs-rwa-hash">--</strong>
+                <span class="gas-tag" id="layrs-rwa-gas">57,939 gas</span>
+              </div>
+
+              <div class="gate-callout callout-granted" id="layrs-callout">
+                <span class="callout-icon" id="layrs-callout-icon">✓</span>
+                <div id="layrs-callout-text">
+                  <strong>Institutional Accreditation Verified</strong>
+                  <p>Carol ($2.5M Net Worth) is cleared for both Spot and Institutional Dark Pool trading!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="telemetry-block">
+            <div class="block-label">Cross-Domain Unlinkability Audit</div>
+            <div class="privacy-audit-box">
+              <div class="audit-row">
+                <span id="audit-label-primary">noctfinance.xyz nullifier:</span>
+                <span class="mono" id="audit-noct-nullifier">--</span>
+              </div>
+              <div class="audit-row">
+                <span id="audit-label-secondary">layrs.xyz nullifier:</span>
+                <span class="mono" id="audit-layrs-nullifier">--</span>
+              </div>
+              <div class="audit-row">
+                <span id="audit-label-status">Secondary domain on-chain status:</span>
+                <span class="audit-status" id="audit-status">isValid: false (Clean zero state)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
