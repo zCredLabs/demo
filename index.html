@@ -40,6 +40,10 @@
             <span class="p-badge">0x02</span>
             <span>Compliance Shield</span>
           </button>
+          <button id="btn-policy-agent" class="policy-btn" data-policy="3">
+            <span class="p-badge">0x03</span>
+            <span>Agent Passport</span>
+          </button>
         </div>
 
         <!-- Policy 1 Personas: Alice & Bob -->
@@ -81,6 +85,31 @@
             <span class="p-info">
               <strong>Dave</strong>
               <small>OFAC Sanctioned</small>
+            </span>
+          </button>
+        </div>
+
+        <!-- Policy 3 Personas: Agent Alpha, Agent Beta, Agent Gamma -->
+        <div class="persona-toggle" id="personas-agent" style="display: none;">
+          <button id="btn-agent-alpha" class="persona-btn active" data-persona="agent-alpha">
+            <span class="p-avatar">🤖</span>
+            <span class="p-info">
+              <strong>Agent Alpha</strong>
+              <small>Attested Quant ($500/d)</small>
+            </span>
+          </button>
+          <button id="btn-agent-beta" class="persona-btn" data-persona="agent-beta">
+            <span class="p-avatar">⚡</span>
+            <span class="p-info">
+              <strong>Agent Beta</strong>
+              <small>Restricted HFT ($5k/d)</small>
+            </span>
+          </button>
+          <button id="btn-agent-gamma" class="persona-btn" data-persona="agent-gamma">
+            <span class="p-avatar">🚨</span>
+            <span class="p-info">
+              <strong>Agent Gamma</strong>
+              <small>Rogue / Untrusted</small>
             </span>
           </button>
         </div>
@@ -318,7 +347,7 @@
               </div>
               <div class="receipt-row">
                 <span>Single-Slot Read:</span>
-                <span class="gas-tag highlight-gas">2,520 gas (&lt; 26k Target)</span>
+                <span class="gas-tag highlight-gas" id="contract-read-gas">2,520 gas (&lt; 26k Target)</span>
               </div>
             </div>
           </div>
@@ -390,6 +419,77 @@
                 <div id="layrs-callout-text">
                   <strong>Institutional Accreditation Verified</strong>
                   <p>Carol ($2.5M Net Worth) is cleared for both Spot and Institutional Dark Pool trading!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partner Gate 3: x402 Micropayment Gate (Policy 3) -->
+          <div class="telemetry-block" id="partner-card-x402" style="display: none;">
+            <div class="block-label">x402 Autonomous Micropayment Gate (MockX402PaymentGate.sol)</div>
+            <div class="x402-gate-card">
+              <!-- Pre-flight Authorization Section -->
+              <div class="gate-row" id="x402-auth-row">
+                <div class="gate-info">
+                  <span class="gate-name">Agent Pre-flight Authorization Check</span>
+                  <span class="gate-desc">Hardware PCR0 Code-Hash Match & Spending Cap Verification</span>
+                </div>
+                <span class="gate-badge gate-granted" id="x402-auth-badge">✅ AUTHORIZED</span>
+              </div>
+              
+              <div class="x402-limits-grid">
+                <div class="x402-limit-item">
+                  <span class="x402-limit-k">Daily Spend Allowance:</span>
+                  <strong class="x402-limit-v" id="x402-daily-allowance">$500 USD / day</strong>
+                </div>
+                <div class="x402-limit-item">
+                  <span class="x402-limit-k">Max Risk Drawdown:</span>
+                  <strong class="x402-limit-v" id="x402-max-drawdown">12.0% (Ceiling: 15%)</strong>
+                </div>
+              </div>
+
+              <div class="flag-pills" id="x402-flags-container">
+                <span class="flag-pill pill-active" id="pill-code-hash">✓ PCR0 Hash Verified</span>
+                <span class="flag-pill pill-active" id="pill-dev-auth">✓ Dev Authenticated</span>
+                <span class="flag-pill pill-active" id="pill-allowance">✓ Allowance Approved</span>
+              </div>
+
+              <div class="gate-divider"></div>
+
+              <!-- Pay-Per-Query Micropayment Execution -->
+              <div class="gate-row" id="x402-pay-row">
+                <div class="gate-info">
+                  <span class="gate-name">Autonomous HTTP 402 Pay-Per-Query Payment</span>
+                  <span class="gate-desc">On-Chain Single-Slot Settlement via Enclave Nullifier</span>
+                </div>
+                <span class="gate-badge gate-granted" id="x402-pay-badge">✅ EXECUTED</span>
+              </div>
+              <div class="gate-receipt-sub" id="x402-pay-receipt">
+                <span>Request ID: <strong class="mono" id="x402-req-id">0x1111...1111</strong></span>
+                <span class="gas-tag" id="x402-pay-gas">50,439 gas</span>
+              </div>
+
+              <div class="gate-divider"></div>
+
+              <!-- Daily Ceiling Defense Test -->
+              <div class="ceiling-test-row">
+                <div class="gate-info">
+                  <span class="gate-name">Spending Ceiling Strict Enforcement</span>
+                  <span class="gate-desc" id="x402-ceiling-desc">Attempting $600 USD charge (> $500 approved daily cap)...</span>
+                </div>
+                <span class="gate-badge gate-blocked" id="x402-ceiling-badge">🛡️ REVERTED</span>
+              </div>
+              <div class="gate-receipt-sub" id="x402-ceiling-sub">
+                <span>Contract Revert: <strong class="mono" id="x402-revert-reason">AllowanceExceeded(600, 500)</strong></span>
+                <span class="gas-tag highlight-gas">0 Wei Lost</span>
+              </div>
+
+              <!-- Callout Summary -->
+              <div class="gate-callout callout-granted" id="x402-callout">
+                <span class="callout-icon" id="x402-callout-icon">✓</span>
+                <div id="x402-callout-text">
+                  <strong>Autonomous AI Agent Micropayment Cleared</strong>
+                  <p>Agent Alpha (Hardware PCR0 Verified) authorized for $50 pay-per-query. Daily cap strictly enforced at $500 without developer key exposure!</p>
                 </div>
               </div>
             </div>
