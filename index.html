@@ -20,8 +20,10 @@
       <div class="nav-left">
         <div class="logo-badge">
           <span class="logo-dot"></span>
-          <span class="logo-title">ZCRED</span>
-          <span class="logo-sub">CONFIDENTIAL DECISION LAYER</span>
+          <div class="logo-text">
+            <span class="logo-title">ZCRED</span>
+            <span class="logo-sub">CONFIDENTIAL DECISION LAYER</span>
+          </div>
         </div>
         <div class="status-chip">
           <span class="chip-dot"></span>
@@ -34,83 +36,15 @@
         <div class="policy-toggle">
           <button id="btn-policy-riskx" class="policy-btn active" data-policy="1">
             <span class="p-badge">0x01</span>
-            <span>RiskX Credit</span>
+            <span>Confidential Credit</span>
           </button>
           <button id="btn-policy-compliance" class="policy-btn" data-policy="2">
             <span class="p-badge">0x02</span>
-            <span>Compliance Shield</span>
+            <span>Institutional Compliance</span>
           </button>
           <button id="btn-policy-agent" class="policy-btn" data-policy="3">
             <span class="p-badge">0x03</span>
-            <span>Agent Passport</span>
-          </button>
-        </div>
-
-        <!-- Policy 1 Personas: Alice & Bob -->
-        <div class="persona-toggle" id="personas-riskx">
-          <button id="btn-alice" class="persona-btn active" data-persona="alice">
-            <span class="p-avatar">👩‍💼</span>
-            <span class="p-info">
-              <strong>Alice</strong>
-              <small>Prime Underwriting</small>
-            </span>
-          </button>
-          <button id="btn-bob" class="persona-btn" data-persona="bob">
-            <span class="p-avatar">👨‍💻</span>
-            <span class="p-info">
-              <strong>Bob</strong>
-              <small>Subprime Underwriting</small>
-            </span>
-          </button>
-        </div>
-
-        <!-- Policy 2 Personas: Carol, Erin, Dave -->
-        <div class="persona-toggle" id="personas-compliance" style="display: none;">
-          <button id="btn-carol" class="persona-btn active" data-persona="carol">
-            <span class="p-avatar">💎</span>
-            <span class="p-info">
-              <strong>Carol</strong>
-              <small>Accredited ($2.5M)</small>
-            </span>
-          </button>
-          <button id="btn-erin" class="persona-btn" data-persona="erin">
-            <span class="p-avatar">🛡️</span>
-            <span class="p-info">
-              <strong>Erin</strong>
-              <small>Retail Cleared ($50k)</small>
-            </span>
-          </button>
-          <button id="btn-dave" class="persona-btn" data-persona="dave">
-            <span class="p-avatar">🚫</span>
-            <span class="p-info">
-              <strong>Dave</strong>
-              <small>OFAC Sanctioned</small>
-            </span>
-          </button>
-        </div>
-
-        <!-- Policy 3 Personas: Agent Alpha, Agent Beta, Agent Gamma -->
-        <div class="persona-toggle" id="personas-agent" style="display: none;">
-          <button id="btn-agent-alpha" class="persona-btn active" data-persona="agent-alpha">
-            <span class="p-avatar">🤖</span>
-            <span class="p-info">
-              <strong>Agent Alpha</strong>
-              <small>Attested Quant ($500/d)</small>
-            </span>
-          </button>
-          <button id="btn-agent-beta" class="persona-btn" data-persona="agent-beta">
-            <span class="p-avatar">⚡</span>
-            <span class="p-info">
-              <strong>Agent Beta</strong>
-              <small>Restricted HFT ($5k/d)</small>
-            </span>
-          </button>
-          <button id="btn-agent-gamma" class="persona-btn" data-persona="agent-gamma">
-            <span class="p-avatar">🚨</span>
-            <span class="p-info">
-              <strong>Agent Gamma</strong>
-              <small>Rogue / Untrusted</small>
-            </span>
+            <span>Autonomous Agent (x402)</span>
           </button>
         </div>
       </div>
@@ -126,6 +60,92 @@
         </button>
       </div>
     </header>
+
+    <!-- Scenario & Test Profile Control Bar -->
+    <section class="scenario-bar">
+      <div class="scenario-bar-left">
+        <div class="scenario-badge">
+          <span class="scenario-dot"></span>
+          <span class="scenario-label">TEST PROFILE</span>
+        </div>
+
+        <!-- Policy 1 Profiles: Prime & Subprime -->
+        <div class="profile-group" id="profiles-riskx">
+          <button id="btn-alice" class="profile-btn active" data-persona="alice">
+            <span class="status-indicator status-green"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Prime Tier Borrower</span>
+              <span class="profile-desc">Tier AAA · 105% Collateral · Clean Debt</span>
+            </div>
+          </button>
+          <button id="btn-bob" class="profile-btn" data-persona="bob">
+            <span class="status-indicator status-amber"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Subprime Borrower</span>
+              <span class="profile-desc">Tier BBB · 135% Collateral · Leverage Risk</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Policy 2 Profiles: Accredited, Retail, Sanctioned -->
+        <div class="profile-group" id="profiles-compliance" style="display: none;">
+          <button id="btn-carol" class="profile-btn active" data-persona="carol">
+            <span class="status-indicator status-green"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Accredited Fund</span>
+              <span class="profile-desc">US · $2.5M Net Worth · Spot + RWA Approved</span>
+            </div>
+          </button>
+          <button id="btn-erin" class="profile-btn" data-persona="erin">
+            <span class="status-indicator status-blue"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Retail Trader</span>
+              <span class="profile-desc">UK · $50k Net Worth · Spot Only Cleared</span>
+            </div>
+          </button>
+          <button id="btn-dave" class="profile-btn" data-persona="dave">
+            <span class="status-indicator status-red"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Sanctioned Entity</span>
+              <span class="profile-desc">OFAC SDN Specimen · Transaction Blocked</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Policy 3 Profiles: Attested, Restricted, Untrusted -->
+        <div class="profile-group" id="profiles-agent" style="display: none;">
+          <button id="btn-agent-alpha" class="profile-btn active" data-persona="agent-alpha">
+            <span class="status-indicator status-green"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Attested Agent</span>
+              <span class="profile-desc">Hardware PCR0 Match · $500/day Cap Approved</span>
+            </div>
+          </button>
+          <button id="btn-agent-beta" class="profile-btn" data-persona="agent-beta">
+            <span class="status-indicator status-amber"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Restricted Agent</span>
+              <span class="profile-desc">Drawdown Cap Breached (25% > 15%) · Paused</span>
+            </div>
+          </button>
+          <button id="btn-agent-gamma" class="profile-btn" data-persona="agent-gamma">
+            <span class="status-indicator status-red"></span>
+            <div class="profile-meta">
+              <span class="profile-name">Untrusted Binary</span>
+              <span class="profile-desc">Unregistered PCR0 · Rogue Code Blocked</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="scenario-bar-right">
+        <div class="enclave-runtime-tag">
+          <span class="runtime-chip">AWS Nitro Enclave</span>
+          <span class="runtime-chip">Horizen Vela CCE</span>
+          <span class="runtime-chip">&lt; 26k Gas Single-Slot</span>
+        </div>
+      </div>
+    </section>
 
     <!-- Pipeline Progress Tracker -->
     <div class="pipeline-tracker">
@@ -151,7 +171,7 @@
       <div class="step-divider"></div>
       <div class="step-item" id="step-5">
         <span class="step-num">5</span>
-        <span class="step-label" id="step-5-label">Noct 105% Settlement</span>
+        <span class="step-label" id="step-5-label">Undercollateralized Settlement</span>
       </div>
     </div>
 
@@ -188,7 +208,7 @@
               </div>
               <div class="field-row">
                 <span class="field-k">Consuming Protocol:</span>
-                <span class="field-v" id="env-domain">noctfinance.xyz</span>
+                <span class="field-v" id="env-domain">lending.protocol.eth</span>
               </div>
               <div class="field-row">
                 <span class="field-k">Enclave Pubkey:</span>
@@ -352,9 +372,9 @@
             </div>
           </div>
 
-          <!-- Partner Gate 1: Noct Lending Pool (Policy 1) -->
+          <!-- Partner Gate 1: Lending Protocol (Policy 1) -->
           <div class="telemetry-block" id="partner-card-noct">
-            <div class="block-label">Noct Finance Undercollateralized Borrow Gate</div>
+            <div class="block-label">Confidential Lending Borrow Gate (Undercollateralized Execution)</div>
             <div class="noct-gate-card">
               <div class="collateral-stat">
                 <span class="c-label">Collateral Deposited</span>
@@ -384,9 +404,9 @@
             </div>
           </div>
 
-          <!-- Partner Gate 2: Layrs Dark Pool (Policy 2) -->
+          <!-- Partner Gate 2: Dark Pool (Policy 2) -->
           <div class="telemetry-block" id="partner-card-layrs" style="display: none;">
-            <div class="block-label">Layrs Confidential Dark Pool Gate (MockLayrsDarkPool.sol)</div>
+            <div class="block-label">Confidential Dark Pool Gate (Institutional Orderbook)</div>
             <div class="layrs-gate-card">
               <div class="gate-row" id="layrs-spot-row">
                 <div class="gate-info">
@@ -426,62 +446,64 @@
 
           <!-- Partner Gate 3: x402 Micropayment Gate (Policy 3) -->
           <div class="telemetry-block" id="partner-card-x402" style="display: none;">
-            <div class="block-label">x402 Autonomous Micropayment Gate (MockX402PaymentGate.sol)</div>
+            <div class="block-label">Autonomous Agent Micropayment Gate (x402 Protocol)</div>
             <div class="x402-gate-card">
-              <!-- Pre-flight Authorization Section -->
-              <div class="gate-row" id="x402-auth-row">
-                <div class="gate-info">
-                  <span class="gate-name">Agent Pre-flight Authorization Check</span>
-                  <span class="gate-desc">Hardware PCR0 Code-Hash Match & Spending Cap Verification</span>
+              <!-- Stage 1: Pre-flight Authorization -->
+              <div class="x402-section">
+                <div class="gate-row" id="x402-auth-row">
+                  <div class="gate-info">
+                    <span class="gate-name">1. Pre-flight Enclave Authorization</span>
+                    <span class="gate-desc">Hardware PCR0 Code-Hash Match & Spending Cap Verification</span>
+                  </div>
+                  <span class="gate-badge gate-granted" id="x402-auth-badge">✅ AUTHORIZED</span>
                 </div>
-                <span class="gate-badge gate-granted" id="x402-auth-badge">✅ AUTHORIZED</span>
-              </div>
-              
-              <div class="x402-limits-grid">
-                <div class="x402-limit-item">
-                  <span class="x402-limit-k">Daily Spend Allowance:</span>
-                  <strong class="x402-limit-v" id="x402-daily-allowance">$500 USD / day</strong>
+                
+                <div class="x402-limits-grid">
+                  <div class="x402-limit-item">
+                    <span class="x402-limit-k">Daily Spend Allowance</span>
+                    <strong class="x402-limit-v" id="x402-daily-allowance">$500 USD / day</strong>
+                  </div>
+                  <div class="x402-limit-item">
+                    <span class="x402-limit-k">Max Risk Drawdown</span>
+                    <strong class="x402-limit-v" id="x402-max-drawdown">12.0% (Ceiling: 15% Max)</strong>
+                  </div>
                 </div>
-                <div class="x402-limit-item">
-                  <span class="x402-limit-k">Max Risk Drawdown:</span>
-                  <strong class="x402-limit-v" id="x402-max-drawdown">12.0% (Ceiling: 15%)</strong>
+
+                <div class="flag-pills" id="x402-flags-container">
+                  <span class="flag-pill pill-active" id="pill-code-hash">✓ PCR0 Hash Verified</span>
+                  <span class="flag-pill pill-active" id="pill-dev-auth">✓ Dev Authenticated</span>
+                  <span class="flag-pill pill-active" id="pill-allowance">✓ Allowance Approved</span>
                 </div>
               </div>
 
-              <div class="flag-pills" id="x402-flags-container">
-                <span class="flag-pill pill-active" id="pill-code-hash">✓ PCR0 Hash Verified</span>
-                <span class="flag-pill pill-active" id="pill-dev-auth">✓ Dev Authenticated</span>
-                <span class="flag-pill pill-active" id="pill-allowance">✓ Allowance Approved</span>
-              </div>
-
-              <div class="gate-divider"></div>
-
-              <!-- Pay-Per-Query Micropayment Execution -->
-              <div class="gate-row" id="x402-pay-row">
-                <div class="gate-info">
-                  <span class="gate-name">Autonomous HTTP 402 Pay-Per-Query Payment</span>
-                  <span class="gate-desc">On-Chain Single-Slot Settlement via Enclave Nullifier</span>
+              <!-- Stage 2: Pay-Per-Query Micropayment Execution -->
+              <div class="x402-section">
+                <div class="gate-row" id="x402-pay-row">
+                  <div class="gate-info">
+                    <span class="gate-name">2. Autonomous HTTP 402 Payment</span>
+                    <span class="gate-desc">On-Chain Single-Slot Settlement via Enclave Nullifier</span>
+                  </div>
+                  <span class="gate-badge gate-granted" id="x402-pay-badge">✅ EXECUTED</span>
                 </div>
-                <span class="gate-badge gate-granted" id="x402-pay-badge">✅ EXECUTED</span>
-              </div>
-              <div class="gate-receipt-sub" id="x402-pay-receipt">
-                <span>Request ID: <strong class="mono" id="x402-req-id">0x1111...1111</strong></span>
-                <span class="gas-tag" id="x402-pay-gas">50,439 gas</span>
-              </div>
-
-              <div class="gate-divider"></div>
-
-              <!-- Daily Ceiling Defense Test -->
-              <div class="ceiling-test-row">
-                <div class="gate-info">
-                  <span class="gate-name">Spending Ceiling Strict Enforcement</span>
-                  <span class="gate-desc" id="x402-ceiling-desc">Attempting $600 USD charge (> $500 approved daily cap)...</span>
+                <div class="gate-receipt-sub" id="x402-pay-receipt">
+                  <span>Request ID: <strong class="mono" id="x402-req-id">0x1111...1111</strong></span>
+                  <span class="gas-tag" id="x402-pay-gas">50,439 gas</span>
                 </div>
-                <span class="gate-badge gate-blocked" id="x402-ceiling-badge">🛡️ REVERTED</span>
               </div>
-              <div class="gate-receipt-sub" id="x402-ceiling-sub">
-                <span>Contract Revert: <strong class="mono" id="x402-revert-reason">AllowanceExceeded(600, 500)</strong></span>
-                <span class="gas-tag highlight-gas">0 Wei Lost</span>
+
+              <!-- Stage 3: Daily Ceiling Defense Test -->
+              <div class="x402-section">
+                <div class="ceiling-test-row">
+                  <div class="gate-info">
+                    <span class="gate-name">3. Spending Ceiling Defense Guard</span>
+                    <span class="gate-desc" id="x402-ceiling-desc">Attempting $600 USD charge (> $500 approved daily cap)...</span>
+                  </div>
+                  <span class="gate-badge gate-blocked" id="x402-ceiling-badge">🛡️ REVERTED</span>
+                </div>
+                <div class="gate-receipt-sub" id="x402-ceiling-sub">
+                  <span>Contract Revert: <strong class="mono" id="x402-revert-reason">AllowanceExceeded(600, 500)</strong></span>
+                  <span class="gas-tag highlight-gas">0 Wei Lost</span>
+                </div>
               </div>
 
               <!-- Callout Summary -->
@@ -499,16 +521,16 @@
             <div class="block-label">Cross-Domain Unlinkability Audit</div>
             <div class="privacy-audit-box">
               <div class="audit-row">
-                <span id="audit-label-primary">noctfinance.xyz nullifier:</span>
+                <span id="audit-label-primary">Primary Domain Nullifier:</span>
                 <span class="mono" id="audit-noct-nullifier">--</span>
               </div>
               <div class="audit-row">
-                <span id="audit-label-secondary">layrs.xyz nullifier:</span>
+                <span id="audit-label-secondary">Secondary Domain Nullifier:</span>
                 <span class="mono" id="audit-layrs-nullifier">--</span>
               </div>
               <div class="audit-row">
-                <span id="audit-label-status">Secondary domain on-chain status:</span>
-                <span class="audit-status" id="audit-status">isValid: false (Clean zero state)</span>
+                <span id="audit-label-status">Secondary Domain On-Chain Status:</span>
+                <span class="audit-status" id="audit-status">isValid: false (Clean zero state across domains)</span>
               </div>
             </div>
           </div>
