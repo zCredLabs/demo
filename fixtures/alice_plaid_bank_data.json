@@ -1,0 +1,15 @@
+{
+  "user_secret": [
+    97, 108, 105, 99, 101, 45, 112, 97, 115, 115,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  ],
+  "liquid_net_worth_usd": 85000,
+  "consecutive_monthly_inflows": 12,
+  "annual_inflow_usd": 120000,
+  "total_liabilities_usd": 15000,
+  "successful_repayments": 8,
+  "total_historical_loans": 8,
+  "liquidation_count": 0,
+  "overdraft_count": 0
+}

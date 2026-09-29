@@ -1,0 +1,13 @@
+{
+  "policy_id": 2,
+  "dapp_domain": "layrs.xyz",
+  "user_secret": [
+    69, 114, 105, 110, 83, 101, 99, 114, 101, 116, 49, 50, 51, 52, 53, 54,
+    55, 56, 57, 48, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 77
+  ],
+  "legal_name_hash": "0xe410000000000000000000000000000000000000000000000000000000000001",
+  "nationality_iso": "GBR",
+  "residence_iso": "GBR",
+  "liquid_net_worth_usd": 50000,
+  "annual_income_usd": 80000
+}
