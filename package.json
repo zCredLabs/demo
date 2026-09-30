@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "vite --port 5174",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "demo:defi": "./tools/run_defi_demo.sh",
+    "demo:steps": "./tools/run_main_defi_demo.sh",
+    "demo:steps:auto": "./tools/run_main_defi_demo.sh --auto",
+    "demo:compliance": "./tools/run_main_compliance_demo.sh",
+    "demo:compliance:auto": "./tools/run_main_compliance_demo.sh --auto",
+    "demo:agent": "./tools/run_agent_demo.sh",
+    "demo": "./tools/run_main_defi_demo.sh"
   },
   "dependencies": {
     "@noble/ciphers": "^1.2.1",

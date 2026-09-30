@@ -3,411 +3,30 @@ import { keccak256, encodePacked } from "viem";
 import { p521 } from "@noble/curves/p521";
 import { bytesToHex } from "@noble/hashes/utils";
 
-// --- Types ---
-type PolicyType = "riskx" | "compliance" | "agent";
+import { PolicyType, Persona } from "./types";
+import {
+  PERSONAS_RISKX,
+  PERSONAS_COMPLIANCE,
+  PERSONAS_AGENT,
+  NETWORKS,
+} from "./data/personas";
 
-interface RiskXPersona {
-  type: "riskx";
-  id: "alice" | "bob";
-  name: string;
-  category: string;
-  claim: {
-    liquid_net_worth_usd: number;
-    consecutive_monthly_inflows: number;
-    annual_inflow_usd: number;
-    total_liabilities_usd: number;
-    successful_repayments: number;
-    total_historical_loans: number;
-    liquidation_count: number;
-  };
-  secretByte: number;
-  tier: number;
-  tierLabel: string;
-  ltvBps: number;
-  collateralRatio: number;
-  score: number;
-}
+import { HeaderComponent } from "./components/Header";
+import { ScenarioBarComponent } from "./components/ScenarioBar";
+import { PipelineTrackerComponent } from "./components/PipelineTracker";
+import { TelemetryViewComponent } from "./components/TelemetryView";
 
-interface CompliancePersona {
-  type: "compliance";
-  id: "carol" | "erin" | "dave";
-  name: string;
-  category: string;
-  claim: {
-    jurisdiction_code: string;
-    liquid_net_worth_usd: number;
-    annual_income_usd: number;
-    is_politically_exposed: boolean;
-    identity_hash: string;
-  };
-  secretByte: number;
-  statusCode: number;
-  statusLabel: string;
-  isAccredited: boolean;
-  isSanctioned: boolean;
-  spotAllowed: boolean;
-  rwaAllowed: boolean;
-}
-
-interface AgentPersona {
-  type: "agent";
-  id: "alpha" | "beta" | "gamma";
-  name: string;
-  category: string;
-  claim: {
-    developer_address: string;
-    agent_code_hash: string;
-    max_daily_allowance_usd: number;
-    max_drawdown_bps: number;
-    permitted_contracts: string[];
-  };
-  secretByte: number;
-  statusCode: number;
-  statusLabel: string;
-  flags: number;
-  dailyAllowanceUsd: number;
-  maxDrawdownPct: number;
-  isAttested: boolean;
-  isRestricted: boolean;
-  isRogue: boolean;
-  testPaymentUsd: number;
-  testPaymentRequestId: `0x${string}`;
-}
-
-type Persona = RiskXPersona | CompliancePersona | AgentPersona;
-
-const PERSONAS_RISKX: Record<"alice" | "bob", RiskXPersona> = {
-  alice: {
-    type: "riskx",
-    id: "alice",
-    name: "Alice",
-    category: "Prime Institution / High Earner",
-    claim: {
-      liquid_net_worth_usd: 85000,
-      consecutive_monthly_inflows: 12,
-      annual_inflow_usd: 120000,
-      total_liabilities_usd: 15000,
-      successful_repayments: 8,
-      total_historical_loans: 8,
-      liquidation_count: 0,
-    },
-    secretByte: 0xaa,
-    tier: 1,
-    tierLabel: "Tier AAA (Prime)",
-    ltvBps: 9520, // 95.2% LTV -> 105% collateral
-    collateralRatio: 1.05,
-    score: 820,
-  },
-  bob: {
-    type: "riskx",
-    id: "bob",
-    name: "Bob",
-    category: "Subprime / Gig Economy Retail Borrower",
-    claim: {
-      liquid_net_worth_usd: 25000,
-      consecutive_monthly_inflows: 8,
-      annual_inflow_usd: 60000,
-      total_liabilities_usd: 20000,
-      successful_repayments: 4,
-      total_historical_loans: 5,
-      liquidation_count: 0,
-    },
-    secretByte: 0xbb,
-    tier: 4,
-    tierLabel: "Tier BBB (Subprime)",
-    ltvBps: 7400, // 74.0% LTV -> 135% collateral
-    collateralRatio: 1.35,
-    score: 630,
-  },
-};
-
-const PERSONAS_COMPLIANCE: Record<"carol" | "erin" | "dave", CompliancePersona> = {
-  carol: {
-    type: "compliance",
-    id: "carol",
-    name: "Carol",
-    category: "Accredited Institutional Trader (US, $2.5M Net Worth)",
-    claim: {
-      jurisdiction_code: "US",
-      liquid_net_worth_usd: 2500000,
-      annual_income_usd: 400000,
-      is_politically_exposed: false,
-      identity_hash: "0x3f7a1c8b9d0e2f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
-    },
-    secretByte: 0xcc,
-    statusCode: 1,
-    statusLabel: "Status 1: Passed Accredited",
-    isAccredited: true,
-    isSanctioned: false,
-    spotAllowed: true,
-    rwaAllowed: true,
-  },
-  erin: {
-    type: "compliance",
-    id: "erin",
-    name: "Erin",
-    category: "Retail Cleared Trader (UK, $50k Net Worth)",
-    claim: {
-      jurisdiction_code: "GB",
-      liquid_net_worth_usd: 50000,
-      annual_income_usd: 65000,
-      is_politically_exposed: false,
-      identity_hash: "0x8e2b9c0d1f3a4e5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b",
-    },
-    secretByte: 0xee,
-    statusCode: 2,
-    statusLabel: "Status 2: Passed Retail",
-    isAccredited: false,
-    isSanctioned: false,
-    spotAllowed: true,
-    rwaAllowed: false,
-  },
-  dave: {
-    type: "compliance",
-    id: "dave",
-    name: "Dave",
-    category: "Sanctioned Entity (Matches OFAC SDN Specimen)",
-    claim: {
-      jurisdiction_code: "KP",
-      liquid_net_worth_usd: 10000000,
-      annual_income_usd: 0,
-      is_politically_exposed: false,
-      identity_hash: "0x1111111111111111111111111111111111111111111111111111111111111111",
-    },
-    secretByte: 0xdd,
-    statusCode: 99,
-    statusLabel: "Status 99: TraderSanctionedOrInvalid",
-    isAccredited: false,
-    isSanctioned: true,
-    spotAllowed: false,
-    rwaAllowed: false,
-  },
-};
-
-const PERSONAS_AGENT: Record<"alpha" | "beta" | "gamma", AgentPersona> = {
-  alpha: {
-    type: "agent",
-    id: "alpha",
-    name: "Agent Alpha",
-    category: "Attested Quant Trading Agent (Hardware PCR0 Verified)",
-    claim: {
-      developer_address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-      agent_code_hash: "0xaa11000000000000000000000000000000000000000000000000000000000001",
-      max_daily_allowance_usd: 500,
-      max_drawdown_bps: 1200,
-      permitted_contracts: [
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-        "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      ],
-    },
-    secretByte: 0xaa,
-    statusCode: 1,
-    statusLabel: "Status 1: Attested Agent",
-    flags: 0x0007,
-    dailyAllowanceUsd: 500,
-    maxDrawdownPct: 12.0,
-    isAttested: true,
-    isRestricted: false,
-    isRogue: false,
-    testPaymentUsd: 50,
-    testPaymentRequestId: "0x1111111111111111111111111111111111111111111111111111111111111111",
-  },
-  beta: {
-    type: "agent",
-    id: "beta",
-    name: "Agent Beta",
-    category: "Restricted High-Frequency Agent (Flagged Drawdown 25% > 15%)",
-    claim: {
-      developer_address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-      agent_code_hash: "0xbb22000000000000000000000000000000000000000000000000000000000002",
-      max_daily_allowance_usd: 5000,
-      max_drawdown_bps: 2500,
-      permitted_contracts: ["0x5FbDB2315678afecb367f032d93F642f64180aa3"],
-    },
-    secretByte: 0xbb,
-    statusCode: 2,
-    statusLabel: "Status 2: Restricted Agent",
-    flags: 0x0003,
-    dailyAllowanceUsd: 5000,
-    maxDrawdownPct: 25.0,
-    isAttested: false,
-    isRestricted: true,
-    isRogue: false,
-    testPaymentUsd: 10,
-    testPaymentRequestId: "0x2222222222222222222222222222222222222222222222222222222222222222",
-  },
-  gamma: {
-    type: "agent",
-    id: "gamma",
-    name: "Agent Gamma",
-    category: "Rogue / Untrusted Agent (Unregistered PCR0 / Tampered Code)",
-    claim: {
-      developer_address: "0x0000000000000000000000000000000000000000",
-      agent_code_hash: "0xbad0000000000000000000000000000000000000000000000000000000000001",
-      max_daily_allowance_usd: 50000,
-      max_drawdown_bps: 5000,
-      permitted_contracts: [],
-    },
-    secretByte: 0xdd,
-    statusCode: 99,
-    statusLabel: "Status 99: ROGUE / UNTRUSTED",
-    flags: 0x0000,
-    dailyAllowanceUsd: 0,
-    maxDrawdownPct: 50.0,
-    isAttested: false,
-    isRestricted: false,
-    isRogue: true,
-    testPaymentUsd: 10,
-    testPaymentRequestId: "0x3333333333333333333333333333333333333333333333333333333333333333",
-  },
-};
-
+// --- State ---
 let currentPolicy: PolicyType = "riskx";
 let currentPersona: Persona = PERSONAS_RISKX.alice;
 let currentNetwork: "local" | "sepolia" = "local";
 let isRunning = false;
 
-interface NetworkSettings {
-  name: string;
-  registry: `0x${string}`;
-  trigger: `0x${string}`;
-  settler: string;
-  hasTrigger: boolean;
-  gasLabel: string;
+// --- Helper Functions ---
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const NETWORKS: Record<"local" | "sepolia", NetworkSettings> = {
-  local: {
-    name: "Horizen Vela Local Devnet (31337)",
-    registry: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
-    trigger: "0x1291Be112d480055DaFd8a610b7d1e203891C274",
-    settler: "VelaZcredTrigger Adapter",
-    hasTrigger: true,
-    gasLabel: "121,795 gas (Trigger Settlement)",
-  },
-  sepolia: {
-    name: "Base Sepolia Testnet (84532)",
-    registry: "0xD27e6A8e297177C4Cb284b5C7E2Ccf8d9C69C11a",
-    trigger: "0x3Fe19C2a0E5060D587F483e3366eb73A5757e623",
-    settler: "VelaZcredTrigger Adapter",
-    hasTrigger: true,
-    gasLabel: "121,795 gas (Trigger Settlement)",
-  },
-};
-
-// DOM Elements - Navigation & Policy Switching
-const btnPolicyRiskx = document.getElementById("btn-policy-riskx") as HTMLButtonElement;
-const btnPolicyCompliance = document.getElementById("btn-policy-compliance") as HTMLButtonElement;
-const btnPolicyAgent = document.getElementById("btn-policy-agent") as HTMLButtonElement;
-const personasRiskxGroup = document.getElementById("personas-riskx") as HTMLDivElement;
-const personasComplianceGroup = document.getElementById("personas-compliance") as HTMLDivElement;
-const personasAgentGroup = document.getElementById("personas-agent") as HTMLDivElement;
-
-// Policy 1 Persona Buttons
-const btnAlice = document.getElementById("btn-alice") as HTMLButtonElement;
-const btnBob = document.getElementById("btn-bob") as HTMLButtonElement;
-
-// Policy 2 Persona Buttons
-const btnCarol = document.getElementById("btn-carol") as HTMLButtonElement;
-const btnErin = document.getElementById("btn-erin") as HTMLButtonElement;
-const btnDave = document.getElementById("btn-dave") as HTMLButtonElement;
-
-// Policy 3 Persona Buttons
-const btnAgentAlpha = document.getElementById("btn-agent-alpha") as HTMLButtonElement;
-const btnAgentBeta = document.getElementById("btn-agent-beta") as HTMLButtonElement;
-const btnAgentGamma = document.getElementById("btn-agent-gamma") as HTMLButtonElement;
-
-// Networks & Run Button
-const btnNetLocal = document.getElementById("btn-net-local") as HTMLButtonElement;
-const btnNetSepolia = document.getElementById("btn-net-sepolia") as HTMLButtonElement;
-const btnRun = document.getElementById("btn-run") as HTMLButtonElement;
-
-// Progress Tracker Labels
-const step5Label = document.getElementById("step-5-label")!;
-
-// Column 1 Elements
-const clientClaimLabel = document.getElementById("client-claim-label")!;
-const clientClaimBox = document.getElementById("client-claim-box")!;
-const envPolicy = document.getElementById("env-policy")!;
-const envDomain = document.getElementById("env-domain")!;
-const envClientPubkey = document.getElementById("env-client-pubkey")!;
-const envIv = document.getElementById("env-iv")!;
-const envNonce = document.getElementById("env-nonce")!;
-const envAad = document.getElementById("env-aad")!;
-const envCiphertextBox = document.getElementById("env-ciphertext-box")!;
-
-// Column 2 Elements
-const wasmMemoryStatus = document.getElementById("wasm-memory-status")!;
-const execPolicyText = document.getElementById("exec-policy-text")!;
-const decisionLabel = document.getElementById("decision-label")!;
-const wasmTier = document.getElementById("wasm-tier")!;
-const wasmNullifier = document.getElementById("wasm-nullifier")!;
-const customdataLabel = document.getElementById("customdata-label")!;
-const wasmCustomData = document.getElementById("wasm-customdata")!;
-const wasmExpiry = document.getElementById("wasm-expiry")!;
-const wasmDigest = document.getElementById("wasm-digest")!;
-const wasmSignature = document.getElementById("wasm-signature")!;
-
-// Column 3 Elements
-const contractNetwork = document.getElementById("contract-network")!;
-const contractSettler = document.getElementById("contract-settler")!;
-const rowTrigger = document.getElementById("row-trigger")!;
-const contractTrigger = document.getElementById("contract-trigger")!;
-const contractRegistry = document.getElementById("contract-registry")!;
-const contractTxHash = document.getElementById("contract-txhash")!;
-const contractGas = document.getElementById("contract-gas")!;
-const contractReadGas = document.getElementById("contract-read-gas")!;
-
-// Partner Card 1 (RiskX)
-const partnerCardNoct = document.getElementById("partner-card-noct") as HTMLDivElement;
-const standardLimit = document.getElementById("standard-limit")!;
-const zcredRateLabel = document.getElementById("zcred-rate-label")!;
-const zcredLimit = document.getElementById("zcred-limit")!;
-const zcredGain = document.getElementById("zcred-gain")!;
-const borrowSummary = document.getElementById("borrow-summary")!;
-
-// Partner Card 2 (Compliance Shield)
-const partnerCardLayrs = document.getElementById("partner-card-layrs") as HTMLDivElement;
-const layrsSpotBadge = document.getElementById("layrs-spot-badge")!;
-const layrsSpotReceipt = document.getElementById("layrs-spot-receipt")!;
-const layrsSpotHash = document.getElementById("layrs-spot-hash")!;
-const layrsSpotGas = document.getElementById("layrs-spot-gas")!;
-const layrsRwaBadge = document.getElementById("layrs-rwa-badge")!;
-const layrsRwaReceipt = document.getElementById("layrs-rwa-receipt")!;
-const layrsRwaHash = document.getElementById("layrs-rwa-hash")!;
-const layrsRwaGas = document.getElementById("layrs-rwa-gas")!;
-const layrsCallout = document.getElementById("layrs-callout")!;
-const layrsCalloutIcon = document.getElementById("layrs-callout-icon")!;
-const layrsCalloutText = document.getElementById("layrs-callout-text")!;
-
-// Partner Card 3 (x402 Micropayment Gate)
-const partnerCardX402 = document.getElementById("partner-card-x402") as HTMLDivElement;
-const x402AuthBadge = document.getElementById("x402-auth-badge")!;
-const x402DailyAllowance = document.getElementById("x402-daily-allowance")!;
-const x402MaxDrawdown = document.getElementById("x402-max-drawdown")!;
-const pillCodeHash = document.getElementById("pill-code-hash")!;
-const pillDevAuth = document.getElementById("pill-dev-auth")!;
-const pillAllowance = document.getElementById("pill-allowance")!;
-const x402PayBadge = document.getElementById("x402-pay-badge")!;
-const x402PayReceipt = document.getElementById("x402-pay-receipt")!;
-const x402ReqId = document.getElementById("x402-req-id")!;
-const x402PayGas = document.getElementById("x402-pay-gas")!;
-const x402CeilingDesc = document.getElementById("x402-ceiling-desc")!;
-const x402CeilingBadge = document.getElementById("x402-ceiling-badge")!;
-const x402CeilingSub = document.getElementById("x402-ceiling-sub")!;
-const x402RevertReason = document.getElementById("x402-revert-reason")!;
-const x402Callout = document.getElementById("x402-callout")!;
-const x402CalloutIcon = document.getElementById("x402-callout-icon")!;
-const x402CalloutText = document.getElementById("x402-callout-text")!;
-
-// Privacy Audit Elements
-const auditLabelPrimary = document.getElementById("audit-label-primary")!;
-const auditLabelSecondary = document.getElementById("audit-label-secondary")!;
-const auditNoctNullifier = document.getElementById("audit-noct-nullifier")!;
-const auditLayrsNullifier = document.getElementById("audit-layrs-nullifier")!;
-const auditStatus = document.getElementById("audit-status")!;
-
-// --- Helper Cryptography Functions ---
 function computeNullifier(secretByte: number, policyId: number, domain: string): `0x${string}` {
   const secret = new Uint8Array(32).fill(secretByte);
   const packed = encodePacked(
@@ -432,110 +51,61 @@ function computeAad(
   return keccak256(packed);
 }
 
-function setStep(num: number) {
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById(`step-${i}`);
-    if (el) {
-      if (i < num) {
-        el.classList.add("completed");
-        el.classList.remove("active");
-      } else if (i === num) {
-        el.classList.add("active");
-        el.classList.remove("completed");
-      } else {
-        el.classList.remove("active", "completed");
-      }
+// --- Initialize Components ---
+const tracker = new PipelineTrackerComponent();
+const telemetry = new TelemetryViewComponent();
+
+const scenarioBar = new ScenarioBarComponent({
+  onProfileSelect: (personaId: string) => {
+    if (isRunning) return;
+    if (currentPolicy === "riskx") {
+      currentPersona = PERSONAS_RISKX[personaId as "alice" | "bob"];
+    } else if (currentPolicy === "compliance") {
+      currentPersona = PERSONAS_COMPLIANCE[personaId as "carol" | "erin" | "dave"];
+    } else {
+      currentPersona = PERSONAS_AGENT[personaId as "alpha" | "beta" | "gamma"];
     }
-  }
-}
+    telemetry.renderClaim(currentPersona, (label) => tracker.setStep5Label(label));
+    runPipeline();
+  },
+});
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const header = new HeaderComponent({
+  onPolicyChange: (policy: PolicyType) => {
+    if (isRunning) return;
+    currentPolicy = policy;
+    scenarioBar.showPolicyProfiles(policy);
 
-// --- Render Claim View ---
-function renderClaim(p: Persona) {
-  if (p.type === "riskx") {
-    step5Label.textContent = "Undercollateralized Settlement";
-    partnerCardNoct.style.display = "block";
-    partnerCardLayrs.style.display = "none";
-    partnerCardX402.style.display = "none";
-    decisionLabel.textContent = "Assigned Tier:";
-    customdataLabel.textContent = "LTV Custom Data:";
-    envPolicy.textContent = "0x01 (RiskX)";
-    envDomain.textContent = "noctfinance.xyz";
+    if (policy === "riskx") currentPersona = PERSONAS_RISKX.alice;
+    if (policy === "compliance") currentPersona = PERSONAS_COMPLIANCE.carol;
+    if (policy === "agent") currentPersona = PERSONAS_AGENT.alpha;
 
-    clientClaimLabel.textContent = `Redacted In-Memory Financial Claim (Client RAM Only - ${p.name})`;
-    clientClaimBox.innerHTML = `// Redacted Financial Claim (${p.name} - ${p.category})
-{
-  "liquid_net_worth_bucket": "$${Math.floor(p.claim.liquid_net_worth_usd / 10000) * 10}k - ${Math.floor(p.claim.liquid_net_worth_usd / 10000) * 10 + 10}k",
-  "consecutive_cashflow_months": ${p.claim.consecutive_monthly_inflows},
-  "liabilities_usd": ${p.claim.total_liabilities_usd},
-  "repayment_record": "${p.claim.successful_repayments}/${p.claim.total_historical_loans}",
-  "defaults": ${p.claim.liquidation_count},
-  "user_secret": "0x${p.secretByte.toString(16).repeat(32)}" // Zeroized in RAM
-}`;
-  } else if (p.type === "compliance") {
-    step5Label.textContent = "Institutional Settlement";
-    partnerCardNoct.style.display = "none";
-    partnerCardLayrs.style.display = "block";
-    partnerCardX402.style.display = "none";
-    decisionLabel.textContent = "Compliance Status:";
-    customdataLabel.textContent = "Accreditation Bitmask:";
-    envPolicy.textContent = "0x02 (Compliance Shield)";
-    envDomain.textContent = "darkpool.institutional.internal";
-
-    clientClaimLabel.textContent = `Redacted Identity & OFAC Attestation (Client RAM Only - ${p.name})`;
-    clientClaimBox.innerHTML = `// Confidential Compliance Ingestion (${p.name} - ${p.category})
-{
-  "jurisdiction_code": "${p.claim.jurisdiction_code}",
-  "net_worth_tier": "$${p.claim.liquid_net_worth_usd >= 1000000 ? (p.claim.liquid_net_worth_usd / 1000000).toFixed(1) + "M+" : (p.claim.liquid_net_worth_usd / 1000).toFixed(0) + "k"}",
-  "annual_inflow_tier": "$${(p.claim.annual_income_usd / 1000).toFixed(0)}k",
-  "pep_flag": ${p.claim.is_politically_exposed},
-  "ofac_identity_hash": "${p.claim.identity_hash.slice(0, 18)}...",
-  "user_secret": "0x${p.secretByte.toString(16).repeat(32)}" // Zeroized in RAM
-}`;
-  } else {
-    // Policy 3: Agent Passport
-    step5Label.textContent = "x402 Micropayment Settlement";
-    partnerCardNoct.style.display = "none";
-    partnerCardLayrs.style.display = "none";
-    partnerCardX402.style.display = "block";
-    decisionLabel.textContent = "Agent Status:";
-    customdataLabel.textContent = "Allowance & Flags Bitmask:";
-    envPolicy.textContent = "0x03 (Agent Passport)";
-    envDomain.textContent = "gateway.x402.ai";
-
-    clientClaimLabel.textContent = `Redacted Agent Identity & Spending Spec (Client RAM Only - ${p.name})`;
-    clientClaimBox.innerHTML = `// Autonomous Agent Identity Spec (${p.name} - ${p.category})
-{
-  "developer_address": "${p.claim.developer_address}",
-  "agent_code_hash": "${p.claim.agent_code_hash.slice(0, 18)}... (PCR0 Spec)",
-  "max_daily_allowance_usd": ${p.claim.max_daily_allowance_usd},
-  "max_drawdown_limit": "${(p.claim.max_drawdown_bps / 100).toFixed(1)}%",
-  "permitted_contracts": ${JSON.stringify(p.claim.permitted_contracts)},
-  "user_secret": "0x${p.secretByte.toString(16).repeat(32)}" // Zeroized in RAM
-}`;
-  }
-}
+    telemetry.renderClaim(currentPersona, (label) => tracker.setStep5Label(label));
+    runPipeline();
+  },
+  onNetworkChange: (network: "local" | "sepolia") => {
+    if (isRunning) return;
+    currentNetwork = network;
+    runPipeline();
+  },
+  onRunPipeline: () => {
+    runPipeline();
+  },
+});
 
 // --- Pipeline Execution ---
 async function runPipeline() {
   if (isRunning) return;
   isRunning = true;
-  btnRun.disabled = true;
-  btnRun.innerHTML = `<span class="btn-icon">⏳</span><span>Evaluating in Nitro Coprocessor...</span>`;
-
-  // Reset progress steps
-  document.querySelectorAll(".step-item").forEach((s) => s.classList.remove("active", "completed"));
-  document.querySelectorAll(".exec-step").forEach((s) => s.classList.remove("active"));
+  header.setRunningState(true);
+  tracker.reset();
 
   // Step 1: Claim Ingestion
-  setStep(1);
-  await sleep(350);
+  tracker.setStep(1);
+  await sleep(300);
 
   // Step 2: P-521 ECDH & AAD Binding
-  setStep(2);
+  tracker.setStep(2);
   const ephemeralPriv = p521.utils.randomPrivateKey();
   const ephemeralPub = p521.getPublicKey(ephemeralPriv, false);
   const ephemeralPubHex = `0x${bytesToHex(ephemeralPub)}` as `0x${string}`;
@@ -553,69 +123,59 @@ async function runPipeline() {
   const registryAddr = net.registry;
   const policyId =
     currentPersona.type === "riskx" ? 1 : currentPersona.type === "compliance" ? 2 : 3;
+
   const dappDomain =
     currentPersona.type === "riskx"
-      ? "noctfinance.xyz"
+      ? "lending.protocol.eth"
       : currentPersona.type === "compliance"
-      ? "darkpool.institutional.internal"
-      : "gateway.x402.ai";
+      ? "darkpool.trade.eth"
+      : "agent-gateway.internal";
+
   const alternateDomain =
     currentPersona.type === "agent"
-      ? "agent.layrs.internal"
+      ? "lending.protocol.eth"
       : currentPersona.type === "riskx"
-      ? "darkpool.institutional.internal"
-      : "noctfinance.xyz";
+      ? "darkpool.trade.eth"
+      : "lending.protocol.eth";
 
   const aadHex = computeAad(1, policyId, chainId, registryAddr, nonceHex, dappDomain);
-
-  envClientPubkey.textContent = `${ephemeralPubHex.slice(0, 26)}... (133 bytes)`;
-  envIv.textContent = ivHex;
-  envNonce.textContent = `${nonceHex.slice(0, 26)}...`;
-  envAad.textContent = `${aadHex.slice(0, 26)}...`;
 
   const ctBytes = new Uint8Array(
     currentPersona.type === "riskx" ? 280 : currentPersona.type === "compliance" ? 320 : 360
   );
   crypto.getRandomValues(ctBytes);
-  envCiphertextBox.textContent = `0x${bytesToHex(ctBytes.slice(0, 48))}... (${ctBytes.length} bytes encrypted payload)`;
+  const ctHex = `0x${bytesToHex(ctBytes)}`;
 
-  await sleep(400);
+  telemetry.updateEnvelope(ephemeralPubHex, ivHex, nonceHex, aadHex, ctHex);
+  await sleep(350);
 
   // Step 3: Enclave In-Guest Execution
-  setStep(3);
-  wasmMemoryStatus.textContent = "Active linear memory (zcred_alloc: 4096 bytes)";
+  tracker.setStep(3);
 
   const execEcdh = document.getElementById("exec-ecdh");
   if (execEcdh) execEcdh.classList.add("active");
-  await sleep(250);
+  await sleep(200);
 
   const execAad = document.getElementById("exec-aad");
   if (execAad) execAad.classList.add("active");
-  await sleep(250);
+  await sleep(200);
 
   const execPolicy = document.getElementById("exec-policy");
   if (execPolicy) {
     execPolicy.classList.add("active");
-    if (currentPersona.type === "riskx") {
-      execPolicyText.textContent = "3. PolicyDispatcher::dispatch(0x01) -> RiskX Evaluated";
-    } else if (currentPersona.type === "compliance") {
-      execPolicyText.textContent = "3. PolicyDispatcher::dispatch(0x02) -> ComplianceShield Evaluated";
-    } else {
-      execPolicyText.textContent = "3. PolicyDispatcher::dispatch(0x03) -> AgentPassport Evaluated";
-    }
   }
-  await sleep(300);
+  await sleep(250);
 
   const execZeroize = document.getElementById("exec-zeroize");
   if (execZeroize) execZeroize.classList.add("active");
-  await sleep(200);
+  await sleep(180);
 
   const execSign = document.getElementById("exec-sign");
   if (execSign) execSign.classList.add("active");
-  await sleep(250);
+  await sleep(200);
 
   // Step 4: Attestation Output Generation
-  setStep(4);
+  tracker.setStep(4);
   const primaryNullifier = computeNullifier(currentPersona.secretByte, policyId, dappDomain);
   const secondaryNullifier = computeNullifier(currentPersona.secretByte, policyId, alternateDomain);
 
@@ -623,42 +183,48 @@ async function runPipeline() {
     Math.floor(Date.now() / 1000) + (currentPersona.type === "agent" ? 86400 * 90 : 86400 * 30);
   let customDataHex = "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
   let statusByte = 0;
+  let policyDisplayName = "";
+  let tierLabel = "";
+  let tierClass = "";
 
   if (currentPersona.type === "riskx") {
     statusByte = currentPersona.tier;
+    policyDisplayName = "3. PolicyDispatcher::dispatch(0x01) -> ConfidentialCredit Evaluated";
+    tierLabel = currentPersona.tierLabel;
+    tierClass = `tier-${currentPersona.tier}`;
     const ltvBuf = new Uint8Array(32);
     const view = new DataView(ltvBuf.buffer);
-    view.setUint16(0, currentPersona.ltvBps, false); // Big endian
+    view.setUint16(0, currentPersona.ltvBps, false);
     customDataHex = `0x${bytesToHex(ltvBuf)}` as `0x${string}`;
-    wasmTier.textContent = currentPersona.tierLabel;
-    wasmTier.className = `field-v tag-tier tier-${currentPersona.tier}`;
   } else if (currentPersona.type === "compliance") {
     statusByte = currentPersona.statusCode;
+    policyDisplayName = "3. PolicyDispatcher::dispatch(0x02) -> InstitutionalCompliance Evaluated";
+    tierLabel = currentPersona.statusLabel;
+    tierClass = currentPersona.isSanctioned
+      ? "status-sanctioned"
+      : currentPersona.isAccredited
+      ? "status-accredited"
+      : "status-retail";
     const bitBuf = new Uint8Array(32);
-    if (currentPersona.isAccredited) bitBuf[0] = 0x01; // Accredited bitmask
+    if (currentPersona.isAccredited) bitBuf[0] = 0x01;
     customDataHex = `0x${bytesToHex(bitBuf)}` as `0x${string}`;
-    wasmTier.textContent = currentPersona.statusLabel;
-    wasmTier.className = `field-v tag-tier ${currentPersona.isSanctioned ? "status-sanctioned" : currentPersona.isAccredited ? "status-accredited" : "status-retail"}`;
   } else {
     // Policy 3: Agent Passport
     statusByte = currentPersona.statusCode;
+    policyDisplayName = "3. PolicyDispatcher::dispatch(0x03) -> AgentPassport Evaluated";
+    tierLabel = currentPersona.statusLabel;
+    tierClass = currentPersona.isAttested
+      ? "status-agent-attested"
+      : currentPersona.isRestricted
+      ? "status-agent-restricted"
+      : "status-agent-rogue";
+
     const buf = new Uint8Array(32);
     const view = new DataView(buf.buffer);
-    // Bytes [18..26]: daily allowance USD u64 (big-endian)
     view.setBigUint64(18, BigInt(currentPersona.isRogue ? 0 : currentPersona.dailyAllowanceUsd), false);
-    // Bytes [26..28]: flags u16 (big-endian)
     view.setUint16(26, currentPersona.flags, false);
-    // Bytes [28..32]: max drawdown bps u32 (big-endian)
     view.setUint32(28, currentPersona.isRogue ? 0 : currentPersona.claim.max_drawdown_bps, false);
     customDataHex = `0x${bytesToHex(buf)}` as `0x${string}`;
-    wasmTier.textContent = currentPersona.statusLabel;
-    if (currentPersona.isAttested) {
-      wasmTier.className = "field-v tag-tier status-agent-attested";
-    } else if (currentPersona.isRestricted) {
-      wasmTier.className = "field-v tag-tier status-agent-restricted";
-    } else {
-      wasmTier.className = "field-v tag-tier status-agent-rogue";
-    }
   }
 
   const mockDigest = keccak256(
@@ -666,387 +232,45 @@ async function runPipeline() {
   );
   const mockSig = `0x${mockDigest.slice(2, 66)}${mockDigest.slice(2, 66)}1b` as `0x${string}`;
 
-  wasmNullifier.textContent = `${primaryNullifier.slice(0, 20)}...`;
-  wasmCustomData.textContent = `${customDataHex.slice(0, 24)}...`;
-  wasmExpiry.textContent = `${expiryEpoch} (${new Date(expiryEpoch * 1000).toLocaleDateString()})`;
-  wasmDigest.textContent = `${mockDigest.slice(0, 20)}...`;
-  wasmSignature.textContent = `${mockSig.slice(0, 26)}... (65 bytes)`;
+  telemetry.updateEnclaveOutput(
+    policyDisplayName,
+    tierLabel,
+    tierClass,
+    primaryNullifier,
+    customDataHex,
+    `${expiryEpoch} (${new Date(expiryEpoch * 1000).toLocaleDateString()})`,
+    mockDigest,
+    mockSig
+  );
 
-  await sleep(400);
+  await sleep(350);
 
   // Step 5: EVM Settlement & Protocol Verification
-  setStep(5);
+  tracker.setStep(5);
   const txBytes = new Uint8Array(32);
   crypto.getRandomValues(txBytes);
-  contractTxHash.textContent = `0x${bytesToHex(txBytes).slice(0, 18)}...`;
-  contractNetwork.textContent = net.name;
-  contractSettler.textContent = net.settler;
-  contractRegistry.textContent = `${net.registry.slice(0, 10)}...${net.registry.slice(-6)}`;
-  contractGas.textContent =
-    currentPersona.type === "agent" ? "105,820 gas (Cold Store)" : net.gasLabel;
+  const txHash = `0x${bytesToHex(txBytes)}`;
 
-  if (contractReadGas) {
-    if (currentPersona.type === "agent") {
-      contractReadGas.textContent = "18,938 gas (< 26k Target)";
-    } else {
-      contractReadGas.textContent = "2,520 gas (< 26k Target)";
-    }
-  }
-
-  if (net.hasTrigger) {
-    rowTrigger.style.display = "flex";
-    contractTrigger.textContent = `${net.trigger.slice(0, 10)}...${net.trigger.slice(-6)}`;
-  } else {
-    rowTrigger.style.display = "none";
-  }
-
-  if (currentPersona.type === "riskx") {
-    const depositEth = 10.0;
-    const stdLimit = depositEth / 1.4;
-    const zLimit = depositEth / currentPersona.collateralRatio;
-    const gainPct = (((zLimit - stdLimit) / stdLimit) * 100).toFixed(1);
-
-    standardLimit.textContent = `${stdLimit.toFixed(3)} ETH`;
-    zcredRateLabel.textContent = `Zcred Tier ${currentPersona.tier} (${(currentPersona.collateralRatio * 100).toFixed(0)}% LTV)`;
-    zcredLimit.textContent = `${zLimit.toFixed(3)} ETH`;
-    zcredGain.textContent = `+${gainPct}% Capital Efficiency`;
-
-    if (currentPersona.tier === 1) {
-      borrowSummary.innerHTML = `
-        <span class="check-icon">✓</span>
-        <div>
-          <strong>9.0 ETH Loan Drawn Live On-Chain</strong>
-          <p>Unlocked 105% prime collateral ratio for ${currentPersona.name}!</p>
-        </div>
-      `;
-    } else {
-      borrowSummary.innerHTML = `
-        <span class="check-icon">✓</span>
-        <div>
-          <strong>7.2 ETH Loan Drawn Live On-Chain</strong>
-          <p>${currentPersona.name} qualified for Tier BBB (135% collateral, beats standard 140%)!</p>
-        </div>
-      `;
-    }
-  } else if (currentPersona.type === "compliance") {
-    // Policy 2: Compliance Shield Gating
-    const spotHash = `0x${bytesToHex(crypto.getRandomValues(new Uint8Array(32))).slice(0, 16)}...`;
-    const rwaHash = `0x${bytesToHex(crypto.getRandomValues(new Uint8Array(32))).slice(0, 16)}...`;
-
-    if (currentPersona.spotAllowed) {
-      layrsSpotBadge.textContent = "✅ GRANTED";
-      layrsSpotBadge.className = "gate-badge gate-granted";
-      layrsSpotReceipt.style.display = "flex";
-      layrsSpotHash.textContent = spotHash;
-      layrsSpotGas.textContent = "57,904 gas";
-    } else {
-      layrsSpotBadge.textContent = "❌ BLOCKED";
-      layrsSpotBadge.className = "gate-badge gate-blocked";
-      layrsSpotReceipt.style.display = "none";
-    }
-
-    if (currentPersona.rwaAllowed) {
-      layrsRwaBadge.textContent = "✅ GRANTED";
-      layrsRwaBadge.className = "gate-badge gate-granted";
-      layrsRwaReceipt.style.display = "flex";
-      layrsRwaHash.textContent = rwaHash;
-      layrsRwaGas.textContent = "57,939 gas";
-    } else {
-      layrsRwaBadge.textContent = "❌ BLOCKED";
-      layrsRwaBadge.className = "gate-badge gate-blocked";
-      layrsRwaReceipt.style.display = "none";
-    }
-
-    if (currentPersona.isSanctioned) {
-      layrsCallout.className = "gate-callout callout-blocked";
-      layrsCalloutIcon.textContent = "🚫";
-      layrsCalloutText.innerHTML = `
-        <strong>Sanctioned Trader Rejected (Error 99)</strong>
-        <p>${currentPersona.name} triggered OFAC SDN collision. All orders rejected at zero gas!</p>
-      `;
-    } else if (currentPersona.isAccredited) {
-      layrsCallout.className = "gate-callout callout-granted";
-      layrsCalloutIcon.textContent = "✓";
-      layrsCalloutText.innerHTML = `
-        <strong>Institutional Accreditation Verified</strong>
-        <p>${currentPersona.name} ($2.5M Net Worth) is cleared for both Spot and Institutional Dark Pool trading!</p>
-      `;
-    } else {
-      layrsCallout.className = "gate-callout callout-warning";
-      layrsCalloutIcon.textContent = "⚠️";
-      layrsCalloutText.innerHTML = `
-        <strong>Retail KYC Cleared / RWA Restricted</strong>
-        <p>${currentPersona.name} is cleared for Spot Trading, but blocked from Institutional RWA (requires accredited status).</p>
-      `;
-    }
-  } else {
-    // Policy 3: Agent Passport x402 Micropayments
-    if (currentPersona.isAttested) {
-      x402AuthBadge.textContent = "✅ AUTHORIZED";
-      x402AuthBadge.className = "gate-badge gate-granted";
-      x402DailyAllowance.textContent = `$${currentPersona.dailyAllowanceUsd.toLocaleString()} USD / day`;
-      x402MaxDrawdown.textContent = `${currentPersona.maxDrawdownPct.toFixed(1)}% (Ceiling: 15% Max)`;
-
-      pillCodeHash.textContent = "✓ PCR0 Hash Verified";
-      pillCodeHash.className = "flag-pill pill-active";
-      pillDevAuth.textContent = "✓ Dev Authenticated";
-      pillDevAuth.className = "flag-pill pill-active";
-      pillAllowance.textContent = "✓ Allowance Approved";
-      pillAllowance.className = "flag-pill pill-active";
-
-      x402PayBadge.textContent = "✅ EXECUTED";
-      x402PayBadge.className = "gate-badge gate-granted";
-      x402PayReceipt.style.display = "flex";
-      x402ReqId.textContent = `${currentPersona.testPaymentRequestId.slice(0, 10)}...${currentPersona.testPaymentRequestId.slice(-4)}`;
-      x402PayGas.textContent = "50,439 gas";
-
-      x402CeilingDesc.textContent = "Attempting $600 USD charge (> $500 approved daily cap)...";
-      x402CeilingBadge.textContent = "🛡️ REVERTED";
-      x402CeilingBadge.className = "gate-badge gate-blocked";
-      x402CeilingSub.style.display = "flex";
-      x402RevertReason.textContent = "AllowanceExceeded(600, 500)";
-
-      x402Callout.className = "gate-callout callout-granted";
-      x402CalloutIcon.textContent = "✓";
-      x402CalloutText.innerHTML = `
-        <strong>Autonomous AI Agent Micropayment Cleared</strong>
-        <p>${currentPersona.name} (Hardware PCR0 Verified) authorized for $${currentPersona.testPaymentUsd} pay-per-query. Daily spend ceiling strictly capped at $${currentPersona.dailyAllowanceUsd} without private API key exposure!</p>
-      `;
-    } else if (currentPersona.isRestricted) {
-      x402AuthBadge.textContent = "⚠️ RESTRICTED";
-      x402AuthBadge.className = "gate-badge gate-blocked";
-      x402DailyAllowance.textContent = `$${currentPersona.dailyAllowanceUsd.toLocaleString()} USD (Unapproved)`;
-      x402MaxDrawdown.textContent = `${currentPersona.maxDrawdownPct.toFixed(1)}% (Exceeds 15% Cap)`;
-
-      pillCodeHash.textContent = "✓ PCR0 Hash Verified";
-      pillCodeHash.className = "flag-pill pill-active";
-      pillDevAuth.textContent = "✓ Dev Authenticated";
-      pillDevAuth.className = "flag-pill pill-active";
-      pillAllowance.textContent = "✗ Allowance Exceeded (25% Drawdown)";
-      pillAllowance.className = "flag-pill pill-inactive";
-
-      x402PayBadge.textContent = "❌ REVERTED";
-      x402PayBadge.className = "gate-badge gate-blocked";
-      x402PayReceipt.style.display = "none";
-
-      x402CeilingDesc.textContent = "Pre-flight blocked: High-frequency drawdown exceeded parameter bounds.";
-      x402CeilingBadge.textContent = "🛑 BLOCKED";
-      x402CeilingBadge.className = "gate-badge gate-blocked";
-      x402CeilingSub.style.display = "flex";
-      x402RevertReason.textContent = "AgentNotAttested(2)";
-
-      x402Callout.className = "gate-callout callout-blocked";
-      x402CalloutIcon.textContent = "⚠️";
-      x402CalloutText.innerHTML = `
-        <strong>Restricted Agent Spending Capped</strong>
-        <p>${currentPersona.name} exceeded risk drawdown ceiling (25.0% > 15.0%). Blocked from executing autonomous payments without human re-authorization.</p>
-      `;
-    } else {
-      // Rogue
-      x402AuthBadge.textContent = "❌ BLOCKED";
-      x402AuthBadge.className = "gate-badge gate-blocked";
-      x402DailyAllowance.textContent = "$0 USD (Untrusted Binary)";
-      x402MaxDrawdown.textContent = `${currentPersona.maxDrawdownPct.toFixed(1)}% (Extreme Risk)`;
-
-      pillCodeHash.textContent = "✗ PCR0 Hash Mismatch";
-      pillCodeHash.className = "flag-pill pill-inactive";
-      pillDevAuth.textContent = "✗ Developer Unauthenticated";
-      pillDevAuth.className = "flag-pill pill-inactive";
-      pillAllowance.textContent = "✗ Allowance Rejected";
-      pillAllowance.className = "flag-pill pill-inactive";
-
-      x402PayBadge.textContent = "❌ REVERTED";
-      x402PayBadge.className = "gate-badge gate-blocked";
-      x402PayReceipt.style.display = "none";
-
-      x402CeilingDesc.textContent = "Untrusted binary: PCR0 code-hash failed hardware enclave attestation.";
-      x402CeilingBadge.textContent = "🚫 BLOCKED";
-      x402CeilingBadge.className = "gate-badge gate-blocked";
-      x402CeilingSub.style.display = "flex";
-      x402RevertReason.textContent = "AgentNotAttested(99)";
-
-      x402Callout.className = "gate-callout callout-blocked";
-      x402CalloutIcon.textContent = "🚫";
-      x402CalloutText.innerHTML = `
-        <strong>Rogue / Tampered Agent Reverted (Error 99)</strong>
-        <p>${currentPersona.name} has an unregistered PCR0 binary hash and invalid developer address. Immediate zero-gas on-chain rejection!</p>
-      `;
-    }
-  }
+  telemetry.updateSettlementReceipt(net, txHash);
+  telemetry.updatePartnerGates(currentPersona);
 
   // Cross-Domain Privacy Audit Output
-  auditLabelPrimary.textContent = `${dappDomain} nullifier:`;
-  auditLabelSecondary.textContent = `${alternateDomain} nullifier:`;
-  auditNoctNullifier.textContent = `${primaryNullifier.slice(0, 22)}...`;
-  auditLayrsNullifier.textContent = `${secondaryNullifier.slice(0, 22)}...`;
-  auditStatus.textContent =
+  telemetry.updateAudit(
+    `Primary Domain (${dappDomain}) Nullifier:`,
+    primaryNullifier,
+    `Secondary Domain (${alternateDomain}) Nullifier:`,
+    secondaryNullifier,
     currentPersona.type === "agent"
       ? `isValid: false (Cryptographically uncorrelatable across API gateways!)`
-      : `isValid: false (Clean zero state across domains!)`;
+      : `isValid: false (Clean zero state across domains!)`
+  );
 
   document.querySelectorAll(".step-item").forEach((s) => s.classList.add("completed"));
 
-  btnRun.disabled = false;
-  btnRun.innerHTML = `<span class="btn-icon">⚡</span><span>Pipeline Verified (Re-Run)</span>`;
+  header.setRunningState(false);
   isRunning = false;
 }
 
-// --- Event Listeners ---
-
-// Policy Switching
-btnPolicyRiskx.addEventListener("click", () => {
-  if (isRunning) return;
-  currentPolicy = "riskx";
-  btnPolicyRiskx.classList.add("active");
-  btnPolicyCompliance.classList.remove("active");
-  btnPolicyAgent.classList.remove("active");
-  personasRiskxGroup.style.display = "flex";
-  personasComplianceGroup.style.display = "none";
-  personasAgentGroup.style.display = "none";
-  currentPersona = PERSONAS_RISKX.alice;
-  btnAlice.classList.add("active");
-  btnBob.classList.remove("active");
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnPolicyCompliance.addEventListener("click", () => {
-  if (isRunning) return;
-  currentPolicy = "compliance";
-  btnPolicyCompliance.classList.add("active");
-  btnPolicyRiskx.classList.remove("active");
-  btnPolicyAgent.classList.remove("active");
-  personasRiskxGroup.style.display = "none";
-  personasComplianceGroup.style.display = "flex";
-  personasAgentGroup.style.display = "none";
-  currentPersona = PERSONAS_COMPLIANCE.carol;
-  btnCarol.classList.add("active");
-  btnErin.classList.remove("active");
-  btnDave.classList.remove("active");
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnPolicyAgent.addEventListener("click", () => {
-  if (isRunning) return;
-  currentPolicy = "agent";
-  btnPolicyAgent.classList.add("active");
-  btnPolicyRiskx.classList.remove("active");
-  btnPolicyCompliance.classList.remove("active");
-  personasRiskxGroup.style.display = "none";
-  personasComplianceGroup.style.display = "none";
-  personasAgentGroup.style.display = "flex";
-  currentPersona = PERSONAS_AGENT.alpha;
-  btnAgentAlpha.classList.add("active");
-  btnAgentBeta.classList.remove("active");
-  btnAgentGamma.classList.remove("active");
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-// Persona Switching (RiskX)
-btnAlice.addEventListener("click", () => {
-  if (isRunning) return;
-  btnAlice.classList.add("active");
-  btnBob.classList.remove("active");
-  currentPersona = PERSONAS_RISKX.alice;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnBob.addEventListener("click", () => {
-  if (isRunning) return;
-  btnBob.classList.add("active");
-  btnAlice.classList.remove("active");
-  currentPersona = PERSONAS_RISKX.bob;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-// Persona Switching (Compliance)
-btnCarol.addEventListener("click", () => {
-  if (isRunning) return;
-  btnCarol.classList.add("active");
-  btnErin.classList.remove("active");
-  btnDave.classList.remove("active");
-  currentPersona = PERSONAS_COMPLIANCE.carol;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnErin.addEventListener("click", () => {
-  if (isRunning) return;
-  btnErin.classList.add("active");
-  btnCarol.classList.remove("active");
-  btnDave.classList.remove("active");
-  currentPersona = PERSONAS_COMPLIANCE.erin;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnDave.addEventListener("click", () => {
-  if (isRunning) return;
-  btnDave.classList.add("active");
-  btnCarol.classList.remove("active");
-  btnErin.classList.remove("active");
-  currentPersona = PERSONAS_COMPLIANCE.dave;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-// Persona Switching (Agent)
-btnAgentAlpha.addEventListener("click", () => {
-  if (isRunning) return;
-  btnAgentAlpha.classList.add("active");
-  btnAgentBeta.classList.remove("active");
-  btnAgentGamma.classList.remove("active");
-  currentPersona = PERSONAS_AGENT.alpha;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnAgentBeta.addEventListener("click", () => {
-  if (isRunning) return;
-  btnAgentBeta.classList.add("active");
-  btnAgentAlpha.classList.remove("active");
-  btnAgentGamma.classList.remove("active");
-  currentPersona = PERSONAS_AGENT.beta;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-btnAgentGamma.addEventListener("click", () => {
-  if (isRunning) return;
-  btnAgentGamma.classList.add("active");
-  btnAgentAlpha.classList.remove("active");
-  btnAgentBeta.classList.remove("active");
-  currentPersona = PERSONAS_AGENT.gamma;
-  renderClaim(currentPersona);
-  runPipeline();
-});
-
-// Network Switching
-btnNetLocal.addEventListener("click", () => {
-  if (isRunning) return;
-  btnNetLocal.classList.add("active");
-  btnNetSepolia.classList.remove("active");
-  currentNetwork = "local";
-  runPipeline();
-});
-
-btnNetSepolia.addEventListener("click", () => {
-  if (isRunning) return;
-  btnNetSepolia.classList.add("active");
-  btnNetLocal.classList.remove("active");
-  currentNetwork = "sepolia";
-  runPipeline();
-});
-
-// Run Button
-btnRun.addEventListener("click", () => {
-  runPipeline();
-});
-
-// Initial Render & Auto-Run
-renderClaim(currentPersona);
+// Initial Boot
+telemetry.renderClaim(currentPersona, (label) => tracker.setStep5Label(label));
 runPipeline();

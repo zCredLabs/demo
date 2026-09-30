@@ -1,0 +1,114 @@
+This folder contains an example docker compose to be used for debug/demo.<br>
+It starts a dev chain using [Foundry Anvil](https://getfoundry.sh/anvil/overview), automatically deploys the smart contracts, and runs all the components of Vela CCE locally.
+
+#### Limitations of this dev enviroment:
+
+- the TEE is only emulated (no real AWS Nitro Enclave is used, just a separate process)
+- based on Vela 0.2.0 tag
+
+## Instructions:
+
+1) Create an .env file. For local development you can copy the ready-made dev defaults:
+
+    ```
+    cp .env.dev .env
+    ```
+
+2) Start the environment with:
+
+    ```
+    docker compose up
+    ```
+
+    The startup sequence is:
+    1. **chain** (Anvil) starts and becomes available
+    2. **subgraph-postgres**, **subgraph-ipfs** start (Graph Node infrastructure)
+    3. **deployer** connects to the chain, deploys all smart contracts, writes the deployed addresses to a shared volume, and exits
+    4. **subgraph-node** (Graph Node) starts, connects to the chain, and becomes healthy
+    5. **subgraph-deployer** reads the deployed contract addresses, generates a local subgraph manifest, and deploys the subgraph to Graph Node, then exits
+    6. **executor** starts
+    7. **manager** and **authorityservice** start, reading the deployed contract addresses and querying the subgraph automatically
+
+## Additional info:
+
+- the manager database and chain data are persisted in docker volumes (`vela-skit-manager-data` for the DB, `vela-skit-chain-data` for chain data).<br>
+  To start from scratch, delete the volumes.
+- deployed contract addresses are stored in the `vela-skit-deploy-data` volume. The deployer checks this on startup and skips deployment if contracts are already present on the chain.
+- deanonymization reports are stored in `vela-skit-manager-reports`; the authority service shares this reports volume so it can read the same outputs.
+- centralized logs are stored in `vela-skit-logs`.
+- to connect to the chain from Metamask, use the following parameters:
+   - rpc url: http://localhost:8545
+   - chainid: 31337
+
+
+## Restarting and volume management
+
+- **Restart without deleting volumes**: the deployer detects existing contracts and skips deployment. Fast restart.
+- **Chain data deleted** (`docker volume rm dockerfiles_vela-skit-chain-data`): the deployer detects contracts are missing from the chain and redeploys.
+- **Deploy data deleted** (`docker volume rm dockerfiles_vela-skit-deploy-data`): the deployer redeploys (same addresses since Anvil is deterministic with the same nonce).
+- **Contracts modified**: rebuild the deployer image, delete both volumes, and restart.
+
+## Where to go next
+The system is up and running, and you can deploy an app on-chain via the descriptor flow. Each deploy derives its own `applicationId` from the on-chain `requestId`, so there is no need to rename the WASM file or reserve a fixed id.
+
+Practical how-to for the `vela-nova` test app (Private transfer):
+- go to https://github.com/HorizenOfficial/vela-nova/releases/tag/v0.2.0 <br>
+*(look for 0.2.0 tag for a compatible version with this dev enviroment)*
+- download `payment_app.wasm` and `novaw-linux` wallet
+- use the novaw-linux wallet executable to submit the deploy and interact with the app:
+
+    ```
+    novaw-linux deployapp --wasm /absolute/path/to/payment_app.wasm --max-value-fee "100 wei"
+    ```
+
+    The wallet uploads the WASM to the authority service (`POST /deploy/upload`) and submits the on-chain deploy request; the Manager picks it up, forwards the artifact to the Executor, and the TEE verifies the WASM fingerprint against the on-chain descriptor before loading the module.
+
+    For deploying an app, your wallet account needs to have the `DEPLOYER_ROLE` role. In this setup, the default account with `DEPLOYER_ROLE` role can be found in .env.dev file in DEPLOYER_PRIVATE_KEY variable. If you submit deploys from a different account, grant it first the `DEPLOYER_ROLE` role with the ProcessorEndpoint management script (`contracts/scripts/management/addAllowedDeployer.ts`) using the admin account.
+
+
+    Use wallet.conf.template (rename it to wallet.conf) as wallet config file, with the following properties set to connect to this dev environment:
+    
+    ```
+    rpcUrl=http://localhost:8545
+    ProcessorAddress=0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+    TeeAuthenticatorAddress=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+    AuthorityServiceURL=http://localhost:8081
+    SubgraphURL=http://localhost:8000/subgraphs/name/hcce
+    ```
+    You will need also to set two keys property:
+    - keySecp256k1 property: you can use one of the private keys of the defaults Anvil accounts, which are pre-founded with 1000 ETH.
+    - keyP521 (used for private communication with the TEE): you can generate one with: <br>
+    ./novaw-linux generatekeys
+
+    Type "./novaw-linux help" on a terminal to have an help on the wallet commands.
+
+    You will need to deploy the app first, from an account with `DEPLOYER_ROLE` role:
+
+    novaw-linux deployapp --wasm /absolute/path/to/payment_app.wasm --max-value-fee "100 wei"
+
+    Then you can try the following ones:
+
+    ./novaw-linux registeruser <br>
+    ./novaw-linux getpublicbalance <br>
+    ./novaw-linux deposit -a "1 ETH" <br>
+    ./novaw-linux getprivatebalance <br>
+    ./novaw-linux privatetransfer <br>
+
+
+
+### Other useful repositories to look into:
+
+- https://github.com/HorizenOfficial/vela-common-ts <br>
+*(look for 0.2.0 tag for a compatible version with this dev enviroment)*
+
+    TypeScript library for interacting with Vela CCE (Confidential Computing Environment) smart contracts.<br>
+    Provides P-521 ECDH encryption and a blockchain client optimized for browser applications.
+
+
+
+
+
+
+
+
+
