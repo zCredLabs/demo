@@ -231,6 +231,15 @@ print(json.dumps({
 PY
 )"
 DESCRIPTOR_HEX="0x$(printf '%s' "$DESCRIPTOR" | xxd -p -c 100000)"
+AVAILABLE_SLOTS=$(cast call "$PROCESSOR" "availableDeploySlots()(uint256)" --rpc-url "$VELA_RPC_URL" 2>/dev/null || echo "10")
+if [ "${AVAILABLE_SLOTS:-0}" -le 1 ]; then
+  CURRENT_MAX=$(cast call "$PROCESSOR" "maxNumOfApplications()(uint256)" --rpc-url "$VELA_RPC_URL" 2>/dev/null || echo "10")
+  NEW_MAX=$(( CURRENT_MAX + 50 ))
+  vela_log "deploy slots low (${AVAILABLE_SLOTS} remaining), expanding maxNumOfApplications to ${NEW_MAX}"
+  cast send "$PROCESSOR" "updateMaxNumOfApplications(uint256)" "$NEW_MAX" \
+    --rpc-url "$VELA_RPC_URL" --private-key "$DEPLOYER_KEY" >/dev/null 2>&1 || true
+fi
+
 FEE="${FEE:-1000}"
 DEPLOY_JSON="$(cast send "$PROCESSOR" \
   "submitDeployRequestWithTrigger(uint8,bytes,address)" 0 "$DESCRIPTOR_HEX" "$TRIGGER" \

@@ -115,6 +115,16 @@ PY
 echo -e "  ${BOLD}Descriptor JSON:${RESET} $DESCRIPTOR"
 PAYLOAD_HEX=$(echo -n "$DESCRIPTOR" | xxd -p -c 100000 | tr -d '\r\n')
 
+# Ensure available deploy slots in ProcessorEndpoint
+AVAILABLE_SLOTS=$(cast call "$PROCESSOR" "availableDeploySlots()(uint256)" --rpc-url "$RPC" 2>/dev/null || echo "10")
+if [ "${AVAILABLE_SLOTS:-0}" -le 1 ]; then
+    CURRENT_MAX=$(cast call "$PROCESSOR" "maxNumOfApplications()(uint256)" --rpc-url "$RPC" 2>/dev/null || echo "10")
+    NEW_MAX=$(( CURRENT_MAX + 50 ))
+    echo -e "  ${YELLOW}ℹ${RESET} Deploy slots low (${AVAILABLE_SLOTS} remaining). Expanding maxNumOfApplications to ${NEW_MAX}..."
+    cast send "$PROCESSOR" "updateMaxNumOfApplications(uint256)" "$NEW_MAX" \
+      --rpc-url "$RPC" --private-key "$PRIVATE_KEY" >/dev/null 2>&1 || true
+fi
+
 echo -e "\n[3.4] Submitting submitDeployRequestWithTrigger to ProcessorEndpoint..."
 DEPLOY_JSON=$(cast send "$PROCESSOR" \
   "submitDeployRequestWithTrigger(uint8,bytes,address)" \
