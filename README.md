@@ -60,9 +60,7 @@ zcred-demo/
 │   ├── run_compliance_demo.sh  # Layrs dark-pool compliance demo
 │   ├── encrypt_payload/        # Client-side AES-GCM payload encryption CLI
 │   ├── vela/common.sh          # Reusable RPC & container assertion utilities
-│   └── demo/                   # Step-by-step modular bash scripts (01-06)
-├── contracts/                  # Solidity source contracts & interfaces
-└── src/                        # Vite + TypeScript + Viem frontend application
+├── src/                        # Vite + TypeScript + Viem frontend application
 ```
 
 ---

@@ -160,11 +160,9 @@ pause
 deploy_contract() {
   local contract="$1"
   shift
-  local contracts_dir="$ROOT/contracts"
+  local contracts_dir="$ROOT/../zcred-contracts"
   if [[ -d "$ROOT/zcred-contracts" ]]; then
     contracts_dir="$ROOT/zcred-contracts"
-  elif [[ -d "$ROOT/../zcred-contracts" ]]; then
-    contracts_dir="$ROOT/../zcred-contracts"
   fi
   local rel_path="src/${contract}.sol"
   if [[ ! -f "$contracts_dir/$rel_path" && -f "$contracts_dir/src/mocks/${contract}.sol" ]]; then

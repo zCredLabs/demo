@@ -51,9 +51,7 @@ echo -e "  ${GREEN}✓${RESET} Authority Service Confirmation: ${CYAN}${UPLOAD_R
 
 # Deploy contracts
 CONTRACTS_DIR=""
-if [ -d "$DEMO_ROOT/contracts" ]; then
-    CONTRACTS_DIR="$DEMO_ROOT/contracts"
-elif [ -d "$DEMO_ROOT/../zcred-contracts" ]; then
+if [ -d "$DEMO_ROOT/../zcred-contracts" ]; then
     CONTRACTS_DIR="$DEMO_ROOT/../zcred-contracts"
 elif [ -d "$DEMO_ROOT/zcred-contracts" ]; then
     CONTRACTS_DIR="$DEMO_ROOT/zcred-contracts"
