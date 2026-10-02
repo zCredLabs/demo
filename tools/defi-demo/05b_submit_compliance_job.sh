@@ -28,7 +28,11 @@ else
 fi
 
 # Load Carol's Accredited Compliance Claim fixture
-CAROL_PAYLOAD=$(cat fixtures/compliance/carol_accredited_usa.json | tr -d '\n' | tr -d ' ')
+CAROL_FIXTURE="../fixtures/compliance/carol_accredited_usa.json"
+if [ ! -f "$CAROL_FIXTURE" ]; then
+    CAROL_FIXTURE="fixtures/compliance/carol_accredited_usa.json"
+fi
+CAROL_PAYLOAD=$(cat "$CAROL_FIXTURE" | tr -d '\n' | tr -d ' ')
 echo -e "\n[5b.1] Ingesting Compliance Claim for Carol (Accredited Investor, USA)..."
 echo -e "  • Net Worth   : \$2,500,000 USD (Exceeds \$1M accreditation threshold)"
 echo -e "  • Annual Inflow: \$450,000 USD"

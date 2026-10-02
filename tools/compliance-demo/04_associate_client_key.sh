@@ -43,7 +43,10 @@ fi
 echo -e "\nTargeting Compliance Application ID: ${CYAN}${APP_ID}${RESET}"
 
 echo -e "\n[4.1] Generating Ephemeral NIST P-521 Client Key Pair & Encrypting Carol's Claim..."
-CAROL_FIXTURE="$DEMO_ROOT/fixtures/compliance/carol_accredited_usa.json"
+CAROL_FIXTURE="$DEMO_ROOT/../fixtures/compliance/carol_accredited_usa.json"
+if [ ! -f "$CAROL_FIXTURE" ]; then
+    CAROL_FIXTURE="$DEMO_ROOT/fixtures/compliance/carol_accredited_usa.json"
+fi
 CAROL_PAYLOAD=$(tr -d '\n' < "$CAROL_FIXTURE")
 
 ENCRYPT_TOOL="$DEMO_ROOT/tools/encrypt_payload/zcred-encrypt"

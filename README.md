@@ -34,11 +34,11 @@ pnpm demo:defi
 1. **[1/8] Environment Check**: Confirms Horizen Vela v0.2.0 containers are healthy.
 2. **[2/8] WASM Artifact Verification**: Uses pre-compiled `artifacts/zcred_kernel.wasm` (or builds from Rust source).
 3. **[3/8] Authority Service Upload**: Uploads guest WASM and asserts SHA-256 measurement.
-4. **[4/8] Smart Contract Deployment**: Deploys `TeeAuthenticator`, `ZcredRegistry`, `VelaZcredTrigger`, and `MockNoctLendingPool`.
+4. **[4/8] Smart Contract Deployment**: Deploys `TeeAuthenticator`, `ZcredRegistry`, `VelaZcredTrigger`, and `MockCreditLendingPool`.
 5. **[5/8] Vela Enclave App Deployment**: Dispatches `DEPLOYAPP` transaction to `ProcessorEndpoint`.
 6. **[6/8] Ephemeral Client Key Association**: Dispatches `ASSOCIATEKEY` (NIST P-521 ephemeral public key).
 7. **[7/8] Confidential Inference**: Encrypts Alice's bank statement via AES-GCM and submits `PROCESS` request.
-8. **[8/8] Settlement & DeFi Borrow**: Verifies Tier 1 AAA attestation emitted by Vela, deposits collateral into Noct Finance, and draws an undercollateralized loan on-chain!
+8. **[8/8] Settlement & DeFi Borrow**: Verifies Tier 1 AAA attestation emitted by Vela, deposits collateral into MockCreditLendingPool, and draws an undercollateralized loan on-chain!
 
 ---
 
@@ -57,7 +57,7 @@ zcred-demo/
 ├── tools/                      # Automated Vela evaluation orchestrators
 │   ├── run_defi_demo.sh        # Canonical 8-step DeFi undercollateralized lending demo
 │   ├── run_agent_demo.sh       # ERC-8004 autonomous agent verification demo
-│   ├── run_compliance_demo.sh  # Layrs dark-pool compliance demo
+│   ├── run_compliance_demo.sh  # Compliant dark-pool demo
 │   ├── encrypt_payload/        # Client-side AES-GCM payload encryption CLI
 │   ├── vela/common.sh          # Reusable RPC & container assertion utilities
 ├── src/                        # Vite + TypeScript + Viem frontend application

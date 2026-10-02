@@ -28,7 +28,11 @@ else
 fi
 
 # Load Agent Alpha Attested Identity fixture
-ALPHA_PAYLOAD=$(cat fixtures/agent/agent_alpha_attested.json | tr -d '\n' | tr -d ' ')
+ALPHA_FIXTURE="../fixtures/agent/agent_alpha_attested.json"
+if [ ! -f "$ALPHA_FIXTURE" ]; then
+    ALPHA_FIXTURE="fixtures/agent/agent_alpha_attested.json"
+fi
+ALPHA_PAYLOAD=$(cat "$ALPHA_FIXTURE" | tr -d '\n' | tr -d ' ')
 echo -e "\n[5c.1] Ingesting Hardware Identity Specification for Agent Alpha..."
 echo -e "  • Developer Address   : 0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 echo -e "  • Binary Code Hash    : 0xaa11...0001 (Matches Hardware PCR0 Specimen)"

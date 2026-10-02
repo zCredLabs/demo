@@ -43,7 +43,10 @@ fi
 echo -e "\nTargeting Agent Application ID: ${CYAN}${APP_ID}${RESET}"
 
 echo -e "\n[4.1] Generating Ephemeral NIST P-521 Client Key Pair & Encrypting Agent Alpha's Claim..."
-ALPHA_FIXTURE="$DEMO_ROOT/fixtures/agent/agent_alpha_attested.json"
+ALPHA_FIXTURE="$DEMO_ROOT/../fixtures/agent/agent_alpha_attested.json"
+if [ ! -f "$ALPHA_FIXTURE" ]; then
+    ALPHA_FIXTURE="$DEMO_ROOT/fixtures/agent/agent_alpha_attested.json"
+fi
 ALPHA_PAYLOAD=$(tr -d '\n' < "$ALPHA_FIXTURE")
 
 ENCRYPT_TOOL="$DEMO_ROOT/tools/encrypt_payload/zcred-encrypt"
