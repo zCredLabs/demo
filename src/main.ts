@@ -27,11 +27,18 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function computeNullifier(secretByte: number, policyId: number, domain: string): `0x${string}` {
-  const secret = new Uint8Array(32).fill(secretByte);
+function computeNullifier(
+  secret: number | `0x${string}`,
+  policyId: number,
+  domain: string
+): `0x${string}` {
+  const secretHex =
+    typeof secret === "string"
+      ? secret
+      : (`0x${bytesToHex(new Uint8Array(32).fill(secret))}` as `0x${string}`);
   const packed = encodePacked(
     ["bytes32", "uint8", "string"],
-    [`0x${bytesToHex(secret)}`, policyId, domain]
+    [secretHex, policyId, domain]
   );
   return keccak256(packed);
 }
@@ -129,7 +136,7 @@ async function runPipeline() {
       ? "lending.protocol.eth"
       : currentPersona.type === "compliance"
       ? "darkpool.trade.eth"
-      : "agent-gateway.internal";
+      : "gateway.x402.ai";
 
   const alternateDomain =
     currentPersona.type === "agent"
@@ -176,8 +183,9 @@ async function runPipeline() {
 
   // Step 4: Attestation Output Generation
   tracker.setStep(4);
-  const primaryNullifier = computeNullifier(currentPersona.secretByte, policyId, dappDomain);
-  const secondaryNullifier = computeNullifier(currentPersona.secretByte, policyId, alternateDomain);
+  const secretParam = (currentPersona as any).secretHex || currentPersona.secretByte;
+  const primaryNullifier = computeNullifier(secretParam, policyId, dappDomain);
+  const secondaryNullifier = computeNullifier(secretParam, policyId, alternateDomain);
 
   const expiryEpoch =
     Math.floor(Date.now() / 1000) + (currentPersona.type === "agent" ? 86400 * 90 : 86400 * 30);

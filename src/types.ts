@@ -58,6 +58,7 @@ export interface AgentPersona {
     permitted_contracts: string[];
   };
   secretByte: number;
+  secretHex?: `0x${string}`;
   statusCode: number;
   statusLabel: string;
   flags: number;
