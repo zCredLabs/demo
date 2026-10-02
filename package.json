@@ -12,7 +12,8 @@
     "demo:steps:auto": "./tools/run_main_defi_demo.sh --auto",
     "demo:compliance": "./tools/run_main_compliance_demo.sh",
     "demo:compliance:auto": "./tools/run_main_compliance_demo.sh --auto",
-    "demo:agent": "./tools/run_agent_demo.sh",
+    "demo:agent": "./tools/run_main_agent_demo.sh",
+    "demo:agent:auto": "./tools/run_main_agent_demo.sh --auto",
     "demo": "./tools/run_main_defi_demo.sh"
   },
   "dependencies": {
